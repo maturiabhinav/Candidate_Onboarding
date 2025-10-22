@@ -1,17 +1,81 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head><meta charset="utf-8"><title>Employee Dashboard</title></head>
-  <body>
-    <h2>Employee Dashboard</h2>
-    <p>Welcome, {{ employee.name or 'Employee' }} ({{ employee.email }})</p>
-    <p><a href="{{ url_for('onboarding.profile_setup') }}">Edit Profile</a> | <a href="{{ url_for('onboarding.reset_profile') }}">Reset Profile</a> | <a href="{{ url_for('onboarding.logout') }}">Logout</a></p>
-    <h3>Documents</h3>
-    <ul>
-      {% for d in docs %}
-        <li>{{ d.file_name or d.file_url }}</li>
-      {% else %}
-        <li>No documents uploaded yet.</li>
-      {% endfor %}
-    </ul>
-  </body>
+<head>
+    <title>Employee Dashboard</title>
+    <style>
+        .flash-messages { margin: 10px 0; padding: 10px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .document-list { margin: 20px 0; }
+        .document-item { padding: 10px; border: 1px solid #ddd; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Employee Dashboard</h1>
+    
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Employee Info -->
+    <div>
+        <h2>Welcome, {{ employee.name or 'Employee' }}!</h2>
+        <p>Email: {{ employee.email }}</p>
+        <p>Department: {{ employee.department or 'Not set' }}</p>
+        {% if not employee.is_submitted %}
+            <a href="{{ url_for('onboarding.profile_setup') }}">
+                <button>Complete Your Profile</button>
+            </a>
+        {% else %}
+            <p>✅ Profile Submitted</p>
+            <a href="{{ url_for('onboarding.reset_profile') }}">
+                <button>Reset Profile</button>
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Document Upload Form -->
+    <div class="upload-section">
+        <h3>Upload Documents</h3>
+        <form action="{{ url_for('onboarding.upload_document') }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="document" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+            <button type="submit">Upload Document</button>
+        </form>
+        <p><small>Allowed formats: PDF, DOC, DOCX, JPG, JPEG, PNG</small></p>
+    </div>
+
+    <!-- Document List -->
+    <div class="document-list">
+        <h3>Your Documents</h3>
+        {% if docs %}
+            {% for doc in docs %}
+                <div class="document-item">
+                    <strong>{{ doc.file_name }}</strong> 
+                    ({{ doc.file_type|upper }})
+                    - Uploaded: {{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
+                    <a href="{{ url_for('onboarding.delete_document', doc_id=doc.id) }}" 
+                       onclick="return confirm('Delete this document?')">
+                        🗑️ Delete
+                    </a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No documents uploaded yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Logout -->
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('onboarding.logout') }}">
+            <button>Logout</button>
+        </a>
+    </div>
+</body>
 </html>
