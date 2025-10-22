@@ -40,7 +40,10 @@ db.init_app(app)
 
 # --- Auto-create DB and default admin ---
 with app.app_context():
+    # Drop all tables and recreate them
+    db.drop_all()
     db.create_all()
+    
     admin_user = User.query.filter_by(username="admin").first()
     if not admin_user:
         default_admin = User(
