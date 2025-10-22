@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Admin Dashboard</title></head>
+  <body>
+    <h2>Admin Dashboard</h2>
+    <a href="{{ url_for('onboarding.create_employee') }}">Create Employee</a> |
+    <a href="{{ url_for('onboarding.logout') }}">Logout</a>
+    <h3>Employees</h3>
+    <ul>
+      {% for emp in employees %}
+        <li>{{ emp.id }} - {{ emp.email }} - {{ emp.name or '—' }} - {{ emp.department or '—' }}</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
