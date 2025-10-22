@@ -109,8 +109,6 @@ def reset_password(token):
     
     return render_template('reset_password.html', token=token)
 
-
-
 # ==================== ADMIN ROUTES ====================
 
 @onboarding_bp.route('/admin/dashboard')
@@ -122,8 +120,35 @@ def admin_dashboard():
     employees = Employee.query.all()
     return render_template('admin_dashboard.html', employees=employees)
 
+@onboarding_bp.route('/admin/create_employee', methods=['GET', 'POST'])
+@login_required
+def create_employee():
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
 
+    if request.method == 'POST':
+        username = request.form.get('username','').strip()
+        password = request.form.get('password','').strip()
+        email = request.form.get('email','').strip()
 
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists.', 'error')
+            return redirect(url_for('onboarding.create_employee'))
+
+        hashed_pw = generate_password_hash(password)
+        new_user = User(username=username, password=hashed_pw, is_admin=False)
+        db.session.add(new_user)
+        db.session.commit()
+
+        new_employee = Employee(user_id=new_user.id, email=email)
+        db.session.add(new_employee)
+        db.session.commit()
+
+        flash(f'Employee account created for {username}!', 'success')
+        return redirect(url_for('onboarding.admin_dashboard'))
+
+    return render_template('create_employee.html')
 
 @onboarding_bp.route('/admin/documents')
 @login_required
