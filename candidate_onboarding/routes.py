@@ -1,10 +1,17 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from candidate_onboarding.models import User, Employee, Document
 from candidate_onboarding import db
+import os
 
 onboarding_bp = Blueprint('onboarding', __name__)
+# Configure allowed file extensions
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @onboarding_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -131,3 +138,66 @@ def reset_profile():
         db.session.commit()
     flash('Your profile has been reset. You can start over.', 'info')
     return redirect(url_for('onboarding.profile_setup'))
+
+# Document upload# 
+@onboarding_bp.route('/upload_document', methods=['POST'])
+@login_required
+def upload_document():
+    if current_user.is_admin:
+        flash('Admins cannot upload documents.', 'error')
+        return redirect(url_for('onboarding.admin_dashboard'))
+    
+    employee = Employee.query.filter_by(user_id=current_user.id).first()
+    if not employee:
+        flash('Employee record not found.', 'error')
+        return redirect(url_for('onboarding.logout'))
+    
+    if 'document' not in request.files:
+        flash('No file selected.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+    
+    file = request.files['document']
+    if file.filename == '':
+        flash('No file selected.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        # In production, you'd upload to cloud storage (S3, etc.)
+        # For now, we'll store file info in database without actual file storage
+        file_type = filename.rsplit('.', 1)[1].lower()
+        
+        new_document = Document(
+            employee_id=employee.id,
+            file_url=f"/uploads/{filename}",  # Placeholder URL
+            file_name=filename,
+            file_type=file_type
+        )
+        db.session.add(new_document)
+        db.session.commit()
+        
+        flash(f'Document {filename} uploaded successfully!', 'success')
+    else:
+        flash('Invalid file type. Allowed: pdf, doc, docx, jpg, jpeg, png', 'error')
+    
+    return redirect(url_for('onboarding.dashboard'))
+
+@onboarding_bp.route('/delete_document/<int:doc_id>')
+@login_required
+def delete_document(doc_id):
+    if current_user.is_admin:
+        flash('Admins cannot delete employee documents.', 'error')
+        return redirect(url_for('onboarding.admin_dashboard'))
+    
+    employee = Employee.query.filter_by(user_id=current_user.id).first()
+    document = Document.query.filter_by(id=doc_id, employee_id=employee.id).first()
+    
+    if document:
+        db.session.delete(document)
+        db.session.commit()
+        flash('Document deleted successfully!', 'success')
+    else:
+        flash('Document not found.', 'error')
+    
+    return redirect(url_for('onboarding.dashboard'))
+
