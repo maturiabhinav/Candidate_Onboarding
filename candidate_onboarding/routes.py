@@ -20,7 +20,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            # FIX: Redirect based on user role after login
+            # FIXED: Redirect based on user role after login
             if user.is_admin:
                 return redirect(url_for('onboarding.admin_dashboard'))
             else:
@@ -81,10 +81,12 @@ def create_employee():
 def dashboard():
     if current_user.is_admin:
         return redirect(url_for('onboarding.admin_dashboard'))
+    
     employee = Employee.query.filter_by(user_id=current_user.id).first()
     if not employee:
         flash('Employee record not found.', 'error')
         return redirect(url_for('onboarding.logout'))
+    
     docs = Document.query.filter_by(employee_id=employee.id).all()
     return render_template('dashboard.html', employee=employee, docs=docs)
 
@@ -94,6 +96,7 @@ def dashboard():
 def profile_setup():
     if current_user.is_admin:
         return redirect(url_for('onboarding.admin_dashboard'))
+    
     employee = Employee.query.filter_by(user_id=current_user.id).first()
     if request.method == 'POST':
         name = request.form.get('name','').strip()
@@ -117,6 +120,7 @@ def profile_setup():
 def reset_profile():
     if current_user.is_admin:
         return redirect(url_for('onboarding.admin_dashboard'))
+    
     employee = Employee.query.filter_by(user_id=current_user.id).first()
     if employee:
         employee.name = None
