@@ -6,6 +6,7 @@ from candidate_onboarding.models import User
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 from urllib.parse import urlparse
+import sqlalchemy as sa
 
 # Initialize Flask app
 app = Flask(__name__)
