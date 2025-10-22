@@ -1,3 +1,4 @@
+# application.py
 import os
 from flask import Flask
 from candidate_onboarding import db
@@ -31,7 +32,11 @@ db.init_app(app)
 
 # --- Auto-create DB and default admin ---
 with app.app_context():
+    # Drop and recreate all tables to ensure clean state
+    db.drop_all()
     db.create_all()
+    
+    # Create default admin
     admin_user = User.query.filter_by(username="admin").first()
     if not admin_user:
         default_admin = User(
