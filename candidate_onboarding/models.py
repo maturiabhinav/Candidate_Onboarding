@@ -7,8 +7,6 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(300), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    is_verified = db.Column(db.Boolean, default=False)
-    verification_token = db.Column(db.String(300))
     created_at = db.Column(db.DateTime, default=datetime.now)
 
     employee = db.relationship("Employee", backref="user", uselist=False, cascade="all, delete-orphan")

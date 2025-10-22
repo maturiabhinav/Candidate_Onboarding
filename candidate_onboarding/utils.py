@@ -28,7 +28,7 @@ def generate_token(user_id, token_type='reset'):
     payload = {
         'user_id': user_id,
         'token_type': token_type,
-        'exp': datetime.now() + timedelta(hours=24)
+        'exp': datetime.utcnow() + timedelta(hours=24)
     }
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 

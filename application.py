@@ -38,19 +38,28 @@ login_manager.login_view = "onboarding.login"
 mail.init_app(app)
 db.init_app(app)
 
-# --- Auto-create DB and default admin ---
+# --- Smart Database Setup ---
 with app.app_context():
-    # Drop all tables and recreate them
-    db.drop_all()
-    db.create_all()
+    # Check if tables exist, if not create them
+    inspector = sa.inspect(db.engine)
+    existing_tables = inspector.get_table_names()
     
+    required_tables = ['user', 'employee', 'document']
+    
+    if not all(table in existing_tables for table in required_tables):
+        print("🔄 Creating missing database tables...")
+        db.create_all()
+        print("✅ Database tables created")
+    else:
+        print("ℹ️ Database tables already exist")
+    
+    # Create admin user only if it doesn't exist
     admin_user = User.query.filter_by(username="admin").first()
     if not admin_user:
         default_admin = User(
             username="admin",
             password=generate_password_hash("Admin@123"),
-            is_admin=True,
-            is_verified=True  # Admin doesn't need verification
+            is_admin=True
         )
         db.session.add(default_admin)
         db.session.commit()

@@ -40,10 +40,6 @@ def login():
         user = User.query.filter_by(username=username).first()
         
         if user and check_password_hash(user.password, password):
-            if not user.is_admin and not user.is_verified:
-                flash('Please verify your email before logging in.', 'error')
-                return redirect(url_for('onboarding.login'))
-                
             login_user(user)
             if user.is_admin:
                 return redirect(url_for('onboarding.admin_dashboard'))
@@ -113,25 +109,7 @@ def reset_password(token):
     
     return render_template('reset_password.html', token=token)
 
-# ==================== EMAIL VERIFICATION ROUTES ====================
 
-@onboarding_bp.route('/verify_email/<token>')
-def verify_email(token):
-    user_id = verify_token(token, 'verify')
-    if not user_id:
-        flash('Invalid or expired verification link.', 'error')
-        return redirect(url_for('onboarding.login'))
-    
-    user = User.query.get(user_id)
-    if user and not user.is_verified:
-        user.is_verified = True
-        user.verification_token = None
-        db.session.commit()
-        flash('Email verified successfully! You can now login.', 'success')
-    else:
-        flash('Invalid verification link or already verified.', 'error')
-    
-    return redirect(url_for('onboarding.login'))
 
 # ==================== ADMIN ROUTES ====================
 
@@ -144,50 +122,8 @@ def admin_dashboard():
     employees = Employee.query.all()
     return render_template('admin_dashboard.html', employees=employees)
 
-@onboarding_bp.route('/admin/create_employee', methods=['GET', 'POST'])
-@login_required
-def create_employee():
-    if not current_user.is_admin:
-        flash('Unauthorized access.', 'error')
-        return redirect(url_for('onboarding.dashboard'))
 
-    if request.method == 'POST':
-        username = request.form.get('username','').strip()
-        password = request.form.get('password','').strip()
-        email = request.form.get('email','').strip()
 
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists.', 'error')
-            return redirect(url_for('onboarding.create_employee'))
-
-        hashed_pw = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_pw, is_admin=False)
-        db.session.add(new_user)
-        db.session.commit()
-
-        new_employee = Employee(user_id=new_user.id, email=email)
-        db.session.add(new_employee)
-        db.session.commit()
-
-        # Send verification email
-        token = generate_token(new_user.id, 'verify')
-        verify_url = url_for('onboarding.verify_email', token=token, _external=True)
-        
-        email_template = f"""
-        <h3>Welcome to Our Company!</h3>
-        <p>Your employee account has been created.</p>
-        <p>Username: {username}</p>
-        <p>Please verify your email by clicking the link below:</p>
-        <a href="{verify_url}">Verify Email</a>
-        <p>After verification, you can login and complete your onboarding.</p>
-        """
-        
-        send_email("Verify Your Employee Account", email, email_template)
-
-        flash(f'Employee account created for {username}! Verification email sent.', 'success')
-        return redirect(url_for('onboarding.admin_dashboard'))
-
-    return render_template('create_employee.html')
 
 @onboarding_bp.route('/admin/documents')
 @login_required
