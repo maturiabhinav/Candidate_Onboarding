@@ -20,7 +20,11 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('onboarding.admin_dashboard' if user.is_admin else 'onboarding.dashboard'))
+            # FIX: Redirect based on user role after login
+            if user.is_admin:
+                return redirect(url_for('onboarding.admin_dashboard'))
+            else:
+                return redirect(url_for('onboarding.dashboard'))
         flash('Invalid credentials', 'error')
     return render_template('login.html')
 
