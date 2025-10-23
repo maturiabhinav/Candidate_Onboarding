@@ -197,7 +197,22 @@ def reject_document(doc_id):
         return redirect(url_for('onboarding.dashboard'))
     
     document = Document.query.get_or_404(doc_id)
+
+# Delete approved documents
+
+@onboarding_bp.route('/admin/delete_approved_document/<int:doc_id>')
+@login_required
+def delete_approved_document(doc_id):
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
     
+    document = Document.query.get_or_404(doc_id)
+    
+    if not document.is_approved:
+        flash('Can only delete approved documents.', 'error')
+        return redirect(url_for('onboarding.admin_documents'))
+
     # Delete from S3
     try:
         s3_client = get_s3_client()
@@ -205,8 +220,11 @@ def reject_document(doc_id):
             Bucket=os.getenv('AWS_S3_BUCKET'),
             Key=document.s3_key
         )
+        print(f"✅ Deleted from S3: {document.s3_key}")
     except ClientError as e:
+        print(f"❌ S3 delete error: {e}")
         flash(f'Error deleting file from S3: {str(e)}', 'error')
+
     
     # Delete from database
     db.session.delete(document)

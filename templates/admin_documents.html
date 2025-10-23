@@ -191,58 +191,61 @@
 
     <!-- Approved Documents Section -->
     <div class="section">
-        <h2>Approved Documents ({{ approved_docs|length }})</h2>
-        {% if approved_docs %}
-            <table class="documents-table">
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>File Name</th>
-                        <th>Type</th>
-                        <th>Uploaded</th>
-                        <th>Approved By</th>
-                        <th>Approved At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for doc in approved_docs %}
-                    <tr>
-                        <td>
-                            <strong>{{ doc.employee.name or doc.employee.email }}</strong><br>
-                            <small>{{ doc.employee.department or 'No department' }}</small>
-                        </td>
-                        <td>{{ doc.file_name }}</td>
-                        <td>{{ doc.file_type|upper }}</td>
-                        <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td>
-                            {% if doc.reviewed_by %}
-                                Admin
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if doc.reviewed_at %}
-                                {{ doc.reviewed_at.strftime('%Y-%m-%d %H:%M') }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ doc.download_url }}" 
-                               class="btn btn-download" 
-                               target="_blank">Download</a>
-                            <span class="status-approved">Approved</span>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="empty-state">No approved documents yet.</div>
-        {% endif %}
-    </div>
+    <h2>Approved Documents ({{ approved_docs|length }})</h2>
+    {% if approved_docs %}
+        <table class="documents-table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th>Uploaded</th>
+                    <th>Approved By</th>
+                    <th>Approved At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in approved_docs %}
+                <tr>
+                    <td>
+                        <strong>{{ doc.employee.name or doc.employee.email }}</strong><br>
+                        <small>{{ doc.employee.department or 'No department' }}</small>
+                    </td>
+                    <td>{{ doc.file_name }}</td>
+                    <td>{{ doc.file_type|upper }}</td>
+                    <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        {% if doc.reviewed_by %}
+                            Admin
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if doc.reviewed_at %}
+                            {{ doc.reviewed_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ doc.download_url }}" 
+                           class="btn btn-download" 
+                           target="_blank">Download</a>
+                        <span class="status-approved">Approved</span>
+                        <a href="{{ url_for('onboarding.delete_approved_document', doc_id=doc.id) }}" 
+                           class="btn btn-reject" 
+                           onclick="return confirm('Permanently delete this approved document? This action cannot be undone.')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">No approved documents yet.</div>
+    {% endif %}
+</div>
 
     <script>
         // Auto-hide flash messages after 5 seconds
