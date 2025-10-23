@@ -166,8 +166,8 @@ def admin_documents():
         flash('Unauthorized access.', 'error')
         return redirect(url_for('onboarding.dashboard'))
     
-    pending_docs = Document.query.filter_by(is_approved=False).all()
-    approved_docs = Document.query.filter_by(is_approved=True).all()
+    pending_docs = Document.query.filter_by(is_approved=False).order_by(Document.uploaded_at.desc()).all()
+    approved_docs = Document.query.filter_by(is_approved=True).order_by(Document.reviewed_at.desc()).all()
     
     return render_template('admin_documents.html', 
                          pending_docs=pending_docs, 
