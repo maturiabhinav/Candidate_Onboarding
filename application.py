@@ -99,7 +99,7 @@ def load_user(user_id):
 # --- Root Route ---
 @app.route("/")
 def home():
-    return "<h3>Server is running! Go to /login</h3>"
+    return redirect(url_for('login'))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
