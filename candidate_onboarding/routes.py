@@ -7,7 +7,7 @@ from candidate_onboarding import db
 from candidate_onboarding.utils import send_email, generate_token, verify_token, get_s3_client, upload_to_s3
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import boto3
 from botocore.exceptions import ClientError
 
@@ -55,59 +55,103 @@ def logout():
     flash('Logged out successfully', 'info')
     return redirect(url_for('onboarding.login'))
 
-# ==================== PASSWORD RESET ROUTES ====================
+# ==================== PASSWORD CHANGE ROUTES ====================
 
-@onboarding_bp.route('/forgot_password', methods=['GET', 'POST'])
-def forgot_password():
+@onboarding_bp.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
     if request.method == 'POST':
-        email = request.form.get('email')
-        user = User.query.join(Employee).filter(Employee.email == email).first()
-        
-        if user:
-            token = generate_token(user.id, 'reset')
-            reset_url = url_for('onboarding.reset_password', token=token, _external=True)
-            
-            email_template = f"""
-            <h3>Password Reset Request</h3>
-            <p>Click the link below to reset your password:</p>
-            <a href="{reset_url}">Reset Password</a>
-            <p>This link expires in 24 hours.</p>
-            """
-            
-            send_email("Password Reset Request", email, email_template)
-            flash('Password reset link sent to your email.', 'success')
-        else:
-            flash('Email not found.', 'error')
-    
-    return render_template('forgot_password.html')
-
-@onboarding_bp.route('/reset_password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    user_id = verify_token(token, 'reset')
-    if not user_id:
-        flash('Invalid or expired reset link.', 'error')
-        return redirect(url_for('onboarding.forgot_password'))
-    
-    user = User.query.get(user_id)
-    if not user:
-        flash('User not found.', 'error')
-        return redirect(url_for('onboarding.forgot_password'))
-    
-    if request.method == 'POST':
-        new_password = request.form.get('password')
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
         confirm_password = request.form.get('confirm_password')
         
-        if new_password != confirm_password:
-            flash('Passwords do not match.', 'error')
-            return redirect(url_for('onboarding.reset_password', token=token))
+        # Verify current password
+        if not check_password_hash(current_user.password, current_password):
+            flash('Current password is incorrect.', 'error')
+            return redirect(url_for('onboarding.change_password'))
         
-        user.password = generate_password_hash(new_password)
+        # Check if new passwords match
+        if new_password != confirm_password:
+            flash('New passwords do not match.', 'error')
+            return redirect(url_for('onboarding.change_password'))
+        
+        # Check password strength (optional)
+        if len(new_password) < 6:
+            flash('Password must be at least 6 characters long.', 'error')
+            return redirect(url_for('onboarding.change_password'))
+        
+        # Update password
+        current_user.password = generate_password_hash(new_password)
         db.session.commit()
         
-        flash('Password updated successfully! Please login.', 'success')
-        return redirect(url_for('onboarding.login'))
+        flash('Password updated successfully!', 'success')
+        return redirect(url_for('onboarding.dashboard' if not current_user.is_admin else 'onboarding.admin_dashboard'))
     
-    return render_template('reset_password.html', token=token)
+    return render_template('change_password.html')
+
+# ==================== ADMIN MANAGEMENT ROUTES ====================
+
+@onboarding_bp.route('/admin/create_admin', methods=['GET', 'POST'])
+@login_required
+def create_admin():
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+
+    if request.method == 'POST':
+        username = request.form.get('username','').strip()
+        password = request.form.get('password','').strip()
+        email = request.form.get('email','').strip()
+
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists.', 'error')
+            return redirect(url_for('onboarding.create_admin'))
+
+        hashed_pw = generate_password_hash(password)
+        new_admin = User(username=username, password=hashed_pw, is_admin=True)
+        db.session.add(new_admin)
+        db.session.commit()
+
+        # Create employee record for admin (optional, for consistency)
+        new_employee = Employee(user_id=new_admin.id, email=email, name=username, is_submitted=True)
+        db.session.add(new_employee)
+        db.session.commit()
+
+        flash(f'Admin account created for {username}!', 'success')
+        return redirect(url_for('onboarding.admin_dashboard'))
+
+    return render_template('create_admin.html')
+
+@onboarding_bp.route('/change_username', methods=['GET', 'POST'])
+@login_required
+def change_username():
+    if not current_user.is_admin:
+        flash('Only admin users can change usernames.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+    
+    if request.method == 'POST':
+        new_username = request.form.get('new_username','').strip()
+        password = request.form.get('password','')
+        
+        # Verify password
+        if not check_password_hash(current_user.password, password):
+            flash('Password is incorrect.', 'error')
+            return redirect(url_for('onboarding.change_username'))
+        
+        # Check if username already exists
+        if User.query.filter_by(username=new_username).first():
+            flash('Username already exists. Please choose a different one.', 'error')
+            return redirect(url_for('onboarding.change_username'))
+        
+        # Update username
+        old_username = current_user.username
+        current_user.username = new_username
+        db.session.commit()
+        
+        flash(f'Username changed from {old_username} to {new_username} successfully!', 'success')
+        return redirect(url_for('onboarding.admin_dashboard'))
+    
+    return render_template('change_username.html')
 
 # ==================== ADMIN ROUTES ====================
 
@@ -183,7 +227,7 @@ def approve_document(doc_id):
     document = Document.query.get_or_404(doc_id)
     document.is_approved = True
     document.reviewed_by = current_user.id
-    document.reviewed_at = datetime.utcnow()
+    document.reviewed_at = datetime.now(timezone.utc)
     db.session.commit()
     
     flash(f'Document {document.file_name} approved!', 'success')
@@ -268,7 +312,7 @@ def profile_setup():
         employee.email = email
         employee.department = department
         employee.is_submitted = True
-        employee.submitted_at = datetime.utcnow()
+        employee.submitted_at = datetime.now(timezone.utc)
         db.session.commit()
         flash('Your profile has been submitted successfully!', 'success')
         return redirect(url_for('onboarding.dashboard'))

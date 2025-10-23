@@ -123,7 +123,10 @@
         <h1>Admin Dashboard</h1>
         <div class="nav-links">
             <a href="{{ url_for('onboarding.create_employee') }}">Create Employee</a>
+            <a href="{{ url_for('onboarding.create_admin') }}">Create Admin</a>
             <a href="{{ url_for('onboarding.admin_documents') }}">Manage Documents</a>
+            <a href="{{ url_for('onboarding.change_password') }}">Change Password</a>
+            <a href="{{ url_for('onboarding.change_username') }}">Change Username</a>
             <a href="{{ url_for('onboarding.logout') }}">Logout</a>
         </div>
     </div>
@@ -166,7 +169,7 @@
                                 ❌ No
                             {% endif %}
                         </td>
-                        <td>{{ emp.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ emp.created_at | india_time }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -222,7 +225,7 @@
                         </td>
                         <td>{{ doc.file_name }}</td>
                         <td>{{ doc.file_type|upper }}</td>
-                        <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ doc.uploaded_at | india_time }}</td>
                         <td><span class="status-pending">Pending Review</span></td>
                         <td>
                             <a href="{{ url_for('onboarding.download_document', doc_id=doc.id) }}" 

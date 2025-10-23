@@ -7,6 +7,8 @@ from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 from urllib.parse import urlparse
 import sqlalchemy as sa
+from datetime import datetime, timezone
+import pytz
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -67,6 +69,27 @@ with app.app_context():
         print("✅ Default admin account created: admin / Admin@123")
     else:
         print("ℹ️ Admin account already exists")
+
+# Custom filter to display India time
+def format_india_time(value):
+    if value is None:
+        return ""
+    
+    # Convert to India timezone
+    india_tz = pytz.timezone('Asia/Kolkata')
+    
+    # If the datetime is naive (no timezone), assume it's UTC
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    
+    # Convert to India time
+    india_time = value.astimezone(india_tz)
+    
+    # Format as desired
+    return india_time.strftime('%Y-%m-%d %H:%M IST')
+
+# Register the filter with Jinja2
+app.jinja_env.filters['india_time'] = format_india_time
 
 # --- User Loader ---
 @login_manager.user_loader
