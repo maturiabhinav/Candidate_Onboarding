@@ -117,8 +117,17 @@ def admin_dashboard():
     if not current_user.is_admin:
         flash('Unauthorized access.', 'error')
         return redirect(url_for('onboarding.dashboard'))
+    
     employees = Employee.query.all()
-    return render_template('admin_dashboard.html', employees=employees)
+    pending_docs = Document.query.filter_by(is_approved=False).order_by(Document.uploaded_at.desc()).limit(5).all()
+    pending_count = Document.query.filter_by(is_approved=False).count()
+    approved_count = Document.query.filter_by(is_approved=True).count()
+    
+    return render_template('admin_dashboard.html', 
+                         employees=employees,
+                         pending_docs=pending_docs,
+                         pending_count=pending_count,
+                         approved_count=approved_count)
 
 @onboarding_bp.route('/admin/create_employee', methods=['GET', 'POST'])
 @login_required
@@ -205,6 +214,7 @@ def reject_document(doc_id):
     
     flash('Document rejected and deleted.', 'success')
     return redirect(url_for('onboarding.admin_documents'))
+
 
 # ==================== EMPLOYEE ROUTES ====================
 
