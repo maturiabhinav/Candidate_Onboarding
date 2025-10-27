@@ -26,6 +26,7 @@ class Employee(db.Model):
     is_submitted = db.Column(db.Boolean, default=False)
     submitted_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=get_india_time)
+    is_active = db.Column(db.Boolean, default=True)
 
     documents = db.relationship("Document", backref="employee", lazy=True, cascade="all, delete-orphan")
 

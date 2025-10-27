@@ -16,8 +16,17 @@
       {% endif %}
     {% endwith %}
     <form method="post" action="{{ url_for('onboarding.login') }}">
-      <input type="text" name="username" placeholder="Username" required><br>
-      <input type="password" name="password" placeholder="Password" required><br>
+      <!-- Changed username input field to email -->
+      <div class="form-group">
+        <label for="email">Email:</label>  <!-- Changed from Username to Email -->
+        <input type="email" id="email" name="email" required>  <!-- Changed type to email -->
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password" placeholder="Password" required><br>
+      </div>
+
       <button type="submit">Login</button>
     </form>
   </body>

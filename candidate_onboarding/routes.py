@@ -35,9 +35,21 @@ def login():
         return redirect(url_for('onboarding.dashboard'))
 
     if request.method == 'POST':
-        username = request.form.get('username','').strip()
+        email = request.form.get('email','').strip()  # Changed from username to email
         password = request.form.get('password','')
-        user = User.query.filter_by(username=username).first()
+        
+        # Find user by employee email
+        employee = Employee.query.filter_by(email=email).first()
+        if not employee:
+            flash('Invalid credentials', 'error')
+            return redirect(url_for('onboarding.login'))
+        
+        user = User.query.get(employee.user_id)
+        
+        # Check if employee is active
+        if not employee.is_active:
+            flash('Account is deactivated. Please contact administrator.', 'error')
+            return redirect(url_for('onboarding.login'))
         
         if user and check_password_hash(user.password, password):
             login_user(user)
@@ -122,6 +134,18 @@ def create_admin():
 
     return render_template('create_admin.html')
 
+
+@onboarding_bp.route('/admin/inactive_employees')
+@login_required
+def inactive_employees():
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+    
+    inactive_employees = Employee.query.filter_by(is_active=False).all()
+    return render_template('inactive_employees.html', employees=inactive_employees)
+
+
 @onboarding_bp.route('/change_username', methods=['GET', 'POST'])
 @login_required
 def change_username():
@@ -162,7 +186,8 @@ def admin_dashboard():
         flash('Unauthorized access.', 'error')
         return redirect(url_for('onboarding.dashboard'))
     
-    employees = Employee.query.all()
+    # Only show active employees
+    employees = Employee.query.filter_by(is_active=True).all()
     pending_docs = Document.query.filter_by(is_approved=False).order_by(Document.uploaded_at.desc()).limit(5).all()
     pending_count = Document.query.filter_by(is_approved=False).count()
     approved_count = Document.query.filter_by(is_approved=True).count()
@@ -181,24 +206,29 @@ def create_employee():
         return redirect(url_for('onboarding.dashboard'))
 
     if request.method == 'POST':
-        username = request.form.get('username','').strip()
-        password = request.form.get('password','').strip()
+        # Generate username from email (optional, for internal use)
         email = request.form.get('email','').strip()
-
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists.', 'error')
+        password = request.form.get('password','').strip()
+        
+        # Check if email already exists (including inactive employees)
+        existing_employee = Employee.query.filter_by(email=email).first()
+        if existing_employee:
+            flash('Email already exists.', 'error')
             return redirect(url_for('onboarding.create_employee'))
 
+        # Generate username from email
+        username = email.split('@')[0]  # Use email prefix as username
+        
         hashed_pw = generate_password_hash(password)
         new_user = User(username=username, password=hashed_pw, is_admin=False)
         db.session.add(new_user)
         db.session.commit()
 
-        new_employee = Employee(user_id=new_user.id, email=email)
+        new_employee = Employee(user_id=new_user.id, email=email, is_active=True)
         db.session.add(new_employee)
         db.session.commit()
 
-        flash(f'Employee account created for {username}!', 'success')
+        flash(f'Employee account created for {email}!', 'success')
         return redirect(url_for('onboarding.admin_dashboard'))
 
     return render_template('create_employee.html')
@@ -316,7 +346,7 @@ def admin_profile():
     
     return render_template('admin_profile.html', employee=employee)
 
-# ==================== EMPLOYEE MANAGEMENT ====================
+# ==================== DELETE EMPLOYEE ====================
 
 @onboarding_bp.route('/admin/delete_employee/<int:employee_id>')
 @login_required
@@ -332,26 +362,19 @@ def delete_employee(employee_id):
         flash('Cannot delete admin accounts.', 'error')
         return redirect(url_for('onboarding.admin_dashboard'))
     
-    # Delete documents from S3 and database
-    documents = Document.query.filter_by(employee_id=employee.id).all()
-    for doc in documents:
-        try:
-            s3_client = get_s3_client()
-            s3_client.delete_object(
-                Bucket=os.getenv('AWS_S3_BUCKET'),
-                Key=doc.s3_key
-            )
-        except ClientError as e:
-            print(f"Error deleting file from S3: {e}")
+    # Soft delete - set employee data to null but keep user account and documents
+    employee.name = None
+    employee.department = None
+    employee.profile_image_url = None
+    employee.s3_key = None
+    employee.is_submitted = False
+    employee.submitted_at = None
+    employee.is_active = False  # Mark as inactive
     
-    # Delete employee and user
-    db.session.delete(employee)
-    db.session.delete(user)
     db.session.commit()
     
-    flash(f'Employee {employee.email} deleted successfully!', 'success')
+    flash(f'Employee {employee.email} has been deactivated. Their documents are preserved.', 'success')
     return redirect(url_for('onboarding.admin_dashboard'))
-
 
 # ==================== EMPLOYEE ROUTES ====================
 
