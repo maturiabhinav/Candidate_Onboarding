@@ -7,6 +7,7 @@ from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 from urllib.parse import urlparse
 import sqlalchemy as sa
+from flask import redirect, url_for
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -112,7 +113,12 @@ def load_user(user_id):
 # --- Root Route ---
 @app.route("/")
 def home():
-    return "<h3>Server is running! Go to /login</h3>"
+    return redirect(url_for('login'))
+
+# Your login route
+@app.route("/login")
+def login():
+    return "<h3>Login Page</h3>"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
