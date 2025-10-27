@@ -164,12 +164,22 @@
                         <td>{{ emp.department or '—' }}</td>
                         <td>
                             {% if emp.is_submitted %}
-                                ✅ Yes ({{ emp.submitted_at.strftime('%Y-%m-%d') }})
+                                {% if emp.submitted_at %}
+                                    ✅ Yes ({{ emp.submitted_at.strftime('%Y-%m-%d') }})
+                                {% else %}
+                                    ✅ Yes (Date not available)
+                                {% endif %}
                             {% else %}
                                 ❌ No
                             {% endif %}
                         </td>
-                        <td>{{ emp.created_at | india_time }}</td>
+                        <td>
+                            {% if emp.created_at %}
+                                {{ emp.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -225,7 +235,13 @@
                         </td>
                         <td>{{ doc.file_name }}</td>
                         <td>{{ doc.file_type|upper }}</td>
-                        <td>{{ doc.uploaded_at | india_time }}</td>
+                        <td>
+                            {% if doc.uploaded_at %}
+                                {{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
                         <td><span class="status-pending">Pending Review</span></td>
                         <td>
                             <a href="{{ url_for('onboarding.download_document', doc_id=doc.id) }}" 
