@@ -278,6 +278,81 @@ def delete_approved_document(doc_id):
     return redirect(url_for('onboarding.admin_documents'))
 
 
+# ==================== ADMIN PROFILE MANAGEMENT ====================
+
+@onboarding_bp.route('/admin/profile', methods=['GET', 'POST'])
+@login_required
+def admin_profile():
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+    
+    employee = Employee.query.filter_by(user_id=current_user.id).first()
+    
+    if request.method == 'POST':
+        name = request.form.get('name','').strip()
+        email = request.form.get('email','').strip()
+        department = request.form.get('department','').strip()
+        
+        if not name or not email:
+            flash('Name and email are required.', 'error')
+            return redirect(url_for('onboarding.admin_profile'))
+        
+        # Check if email is already taken by another user
+        existing_employee = Employee.query.filter(Employee.email == email, Employee.id != employee.id).first()
+        if existing_employee:
+            flash('Email already exists.', 'error')
+            return redirect(url_for('onboarding.admin_profile'))
+        
+        employee.name = name
+        employee.email = email
+        employee.department = department
+        employee.is_submitted = True
+        employee.submitted_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('onboarding.admin_dashboard'))
+    
+    return render_template('admin_profile.html', employee=employee)
+
+# ==================== EMPLOYEE MANAGEMENT ====================
+
+@onboarding_bp.route('/admin/delete_employee/<int:employee_id>')
+@login_required
+def delete_employee(employee_id):
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+    
+    employee = Employee.query.get_or_404(employee_id)
+    user = User.query.get(employee.user_id)
+    
+    if user.is_admin:
+        flash('Cannot delete admin accounts.', 'error')
+        return redirect(url_for('onboarding.admin_dashboard'))
+    
+    # Delete documents from S3 and database
+    documents = Document.query.filter_by(employee_id=employee.id).all()
+    for doc in documents:
+        try:
+            s3_client = get_s3_client()
+            s3_client.delete_object(
+                Bucket=os.getenv('AWS_S3_BUCKET'),
+                Key=doc.s3_key
+            )
+        except ClientError as e:
+            print(f"Error deleting file from S3: {e}")
+    
+    # Delete employee and user
+    db.session.delete(employee)
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash(f'Employee {employee.email} deleted successfully!', 'success')
+    return redirect(url_for('onboarding.admin_dashboard'))
+
+
 # ==================== EMPLOYEE ROUTES ====================
 
 @onboarding_bp.route('/dashboard')

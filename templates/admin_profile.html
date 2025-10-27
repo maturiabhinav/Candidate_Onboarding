@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .flash-messages {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .profile-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Profile</h1>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-messages {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="profile-info">
+        <p><strong>Username:</strong> {{ current_user.username }}</p>
+        <p><strong>Account Type:</strong> Administrator</p>
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" value="{{ employee.name or '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ employee.email or '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="department">Department:</label>
+            <input type="text" id="department" name="department" value="{{ employee.department or '' }}">
+        </div>
+
+        <button type="submit" class="btn">Update Profile</button>
+        <a href="{{ url_for('onboarding.admin_dashboard') }}" class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <p><strong>Account Management:</strong></p>
+        <a href="{{ url_for('onboarding.change_password') }}" class="btn" style="background: #28a745;">
+            Change Password
+        </a>
+        <a href="{{ url_for('onboarding.change_username') }}" class="btn" style="background: #17a2b8;">
+            Change Username
+        </a>
+    </div>
+</body>
+</html>
