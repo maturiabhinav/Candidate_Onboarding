@@ -250,6 +250,36 @@ def debug_admin_accounts():
     
     return result
 
+@onboarding_bp.route('/reset_admin_email')
+def reset_admin_email():
+    """Reset default admin email to a known value"""
+    admin_user = User.query.filter_by(username="admin").first()
+    if not admin_user:
+        return "Admin user not found"
+    
+    # Find or create employee record for admin
+    admin_employee = Employee.query.filter_by(user_id=admin_user.id).first()
+    if not admin_employee:
+        admin_employee = Employee(user_id=admin_user.id, email="admin@company.com")
+        db.session.add(admin_employee)
+    
+    # Set the email to something you know
+    admin_employee.email = "admin@yourcompany.com"
+    admin_employee.name = "Administrator"
+    admin_employee.is_submitted = True
+    admin_employee.is_active = True
+    
+    db.session.commit()
+    
+    return f"""
+    <h3>Admin Email Reset</h3>
+    <p><strong>Username:</strong> admin</p>
+    <p><strong>Email:</strong> admin@yourcompany.com</p>
+    <p><strong>Password:</strong> Admin@123</p>
+    <p>You can now login with email: <strong>admin@yourcompany.com</strong> and password: <strong>Admin@123</strong></p>
+    """
+
+
 @onboarding_bp.route('/admin/documents')
 @login_required
 def admin_documents():
