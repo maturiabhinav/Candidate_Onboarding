@@ -2,7 +2,7 @@ import os
 from flask import Flask, redirect, url_for
 from candidate_onboarding import db, login_manager, mail
 from candidate_onboarding.routes import onboarding_bp
-from candidate_onboarding.models import User
+from candidate_onboarding.models import User, Employee
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 from urllib.parse import urlparse
@@ -43,18 +43,26 @@ db.init_app(app)
 
 # --- Smart Database Setup ---
 with app.app_context():
-    # Check if tables exist, if not create them
-    inspector = sa.inspect(db.engine)
-    existing_tables = inspector.get_table_names()
-    
-    required_tables = ['user', 'employee', 'document']
-    
-    if not all(table in existing_tables for table in required_tables):
-        print("🔄 Creating missing database tables...")
+    try:
+        # Try to query the user table - if it fails, create tables
+        User.query.first()
+        print("ℹ️ Database tables already exist")
+        
+        # Check if is_active column exists in the 'employee' table, if not, add it
+        inspector = sa.inspect(db.engine)
+        columns = [col['name'] for col in inspector.get_columns('employee')]
+        
+        if 'is_active' not in columns:
+            print("🔄 Adding is_active column to employee table...")
+            # Add the column using raw SQL via SQLAlchemy
+            db.engine.execute(sa.text('ALTER TABLE employee ADD COLUMN is_active BOOLEAN DEFAULT TRUE'))
+            print("✅ is_active column added successfully")
+            
+    except Exception as e:
+        print(f"❌ Error querying user table: {e}")
+        print("🔄 Creating database tables...")
         db.create_all()
         print("✅ Database tables created")
-    else:
-        print("ℹ️ Database tables already exist")
     
     # Create admin user only if it doesn't exist
     admin_user = User.query.filter_by(username="admin").first()
@@ -66,6 +74,18 @@ with app.app_context():
         )
         db.session.add(default_admin)
         db.session.commit()
+        
+        # Create employee record for admin
+        admin_employee = Employee(
+            user_id=default_admin.id, 
+            email="admin@company.com",
+            name="Administrator",
+            is_submitted=True,
+            is_active=True  # Set the admin's status to active
+        )
+        db.session.add(admin_employee)
+        db.session.commit()
+        
         print("✅ Default admin account created: admin / Admin@123")
     else:
         print("ℹ️ Admin account already exists")
