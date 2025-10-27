@@ -31,6 +31,28 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or "sqlite:///local.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# --- Custom Jinja2 Filters ---
+def format_india_time(value):
+    """Custom filter to display datetime in India timezone (IST)"""
+    if value is None:
+        return ""
+    
+    # India is UTC+5:30
+    india_offset = timedelta(hours=5, minutes=30)
+    
+    # If datetime is naive (no timezone), assume UTC
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    
+    # Convert to India time (UTC+5:30)
+    india_time = value + india_offset
+    
+    # Format as desired: "YYYY-MM-DD HH:MM IST"
+    return india_time.strftime('%Y-%m-%d %H:%M IST')
+
+# Register the custom filter with Jinja2
+app.jinja_env.filters['india_time'] = format_india_time
+
 # Register blueprint
 app.register_blueprint(onboarding_bp)
 
