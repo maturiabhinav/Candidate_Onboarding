@@ -233,6 +233,23 @@ def create_employee():
 
     return render_template('create_employee.html')
 
+@onboarding_bp.route('/debug/admin_accounts')
+def debug_admin_accounts():
+    """Debug route to see all admin accounts and their emails"""
+    admin_users = User.query.filter_by(is_admin=True).all()
+    
+    result = "<h3>Admin Accounts</h3>"
+    for admin in admin_users:
+        employee = Employee.query.filter_by(user_id=admin.id).first()
+        result += f"""
+        <p><strong>Username:</strong> {admin.username}</p>
+        <p><strong>Email:</strong> {employee.email if employee else 'NO EMPLOYEE RECORD'}</p>
+        <p><strong>Password:</strong> Admin@123</p>
+        <hr>
+        """
+    
+    return result
+
 @onboarding_bp.route('/admin/documents')
 @login_required
 def admin_documents():
