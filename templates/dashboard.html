@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Dashboard</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: #f5f5f5;
             min-height: 100vh;
         }
 
-        /* Layout */
         .container {
             display: flex;
             height: 100vh;
@@ -57,22 +61,52 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        .profile-name { font-size: 20px; font-weight: 600; margin-bottom: 5px; }
-        .profile-email { font-size: 13px; color: rgba(255, 255, 255, 0.8); }
-        .profile-role { font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-top: 5px; }
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
 
-        .nav-menu { list-style: none; flex: 1; margin-top: 20px; }
-        .nav-item { margin-bottom: 10px; }
+        .profile-email {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .profile-role {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
         .nav-link {
-            display: flex; align-items: center;
+            display: flex;
+            align-items: center;
             padding: 14px 18px;
-            color: white; text-decoration: none;
+            color: white;
+            text-decoration: none;
             border-radius: 10px;
             transition: background 0.3s;
             cursor: pointer;
         }
-        .nav-link:hover, .nav-link.active { background: rgba(255, 255, 255, 0.15); }
-        .nav-icon { margin-right: 12px; width: 22px; height: 22px; }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            width: 22px;
+            height: 22px;
+        }
 
         .logout-btn {
             background: rgba(255, 255, 255, 0.2);
@@ -85,41 +119,44 @@
             transition: background 0.3s;
             margin-top: 20px;
         }
-        .logout-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
 
         /* Main content */
         .main-content {
             flex: 1;
-            padding: 30px;
+            padding: 40px;
             overflow-y: auto;
         }
 
         .flash-messages { margin: 10px 0; padding: 10px; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-
-        .document-list { margin: 20px 0; }
-        .document-item {
-            padding: 10px;
-            border: 1px solid #ddd;
-            margin: 5px 0;
-            background: white;
-            border-radius: 6px;
-        }
+        .success { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; }
 
         button {
             background: #4F46E5;
             color: white;
             border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
+            padding: 10px 18px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background 0.3s;
         }
-        button:hover { background: #4338CA; }
+
+        button:hover {
+            background: #4338CA;
+        }
 
         @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .sidebar { width: 100%; }
+            .sidebar {
+                width: 100%;
+            }
+
+            .container {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -128,6 +165,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">EPortal</div>
+            
             <div class="profile">
                 <div class="profile-img">👨‍💼</div>
                 <div class="profile-name">{{ employee.name or 'Employee' }}</div>
@@ -136,19 +174,32 @@
             </div>
 
             <ul class="nav-menu">
-                <li class="nav-item"><a class="nav-link active" onclick="showSection('dashboard')">🏠 Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('profile')">🧾 Complete Profile</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('password')">🔒 Change Password</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('documents')">📁 Documents</a></li>
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showSection('dashboard')">
+                        🏠 Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('profile')">
+                        🧾 Complete Your Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('password')">
+                        🔑 Change/Reset Password
+                    </a>
+                </li>
             </ul>
 
             <form action="{{ url_for('onboarding.logout') }}" method="get">
-                <button class="logout-btn">Logout</button>
+                <button type="submit" class="logout-btn">Logout</button>
             </form>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
+            <h1>Welcome, {{ employee.name or 'Employee' }} 👋</h1>
+
             <!-- Flash Messages -->
             <div class="flash-messages">
                 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -160,66 +211,40 @@
                 {% endwith %}
             </div>
 
-            <!-- Dashboard Section -->
-            <div id="dashboard" class="section">
-                <h1>Welcome, {{ employee.name or 'Employee' }}!</h1>
+            <!-- Dashboard -->
+            <div id="dashboard" class="content-section">
                 {% if not employee.is_submitted %}
-                    <a href="{{ url_for('onboarding.profile_setup') }}"><button>Complete Your Profile</button></a>
-                {% else %}
-                    <p>✅ Profile Submitted</p>
-                    <a href="{{ url_for('onboarding.reset_profile') }}"><button>Reset Profile</button></a>
+                    <p>Your profile is incomplete. Please complete your profile setup.</p>
+                    <a href="{{ url_for('onboarding.profile_setup') }}">
+                        <button>Complete Your Profile</button>
+                    </a>
                 {% endif %}
             </div>
 
-            <!-- Profile Section -->
-            <div id="profile" class="section" style="display:none;">
-                <h2>Profile Setup</h2>
-                <a href="{{ url_for('onboarding.profile_setup') }}"><button>Go to Profile Setup</button></a>
+            <!-- Profile -->
+            <div id="profile" class="content-section" style="display:none;">
+                <p>Profile setup section.</p>
+                <a href="{{ url_for('onboarding.profile_setup') }}">
+                    <button>Go to Profile Setup</button>
+                </a>
             </div>
 
-            <!-- Password Section -->
-            <div id="password" class="section" style="display:none;">
-                <h2>Change Password</h2>
-                <a href="{{ url_for('onboarding.change_password') }}"><button>Change Password</button></a>
-            </div>
-
-            <!-- Documents Section -->
-            <div id="documents" class="section" style="display:none;">
-                <h2>Upload Documents</h2>
-                <form action="{{ url_for('onboarding.upload_document') }}" method="post" enctype="multipart/form-data">
-                    <input type="file" name="document" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
-                    <button type="submit">Upload Document</button>
-                </form>
-                <p><small>Allowed formats: PDF, DOC, DOCX, JPG, JPEG, PNG</small></p>
-
-                <div class="document-list">
-                    <h3>Your Documents</h3>
-                    {% if docs %}
-                        {% for doc in docs %}
-                            <div class="document-item">
-                                <strong>{{ doc.file_name }}</strong> 
-                                ({{ doc.file_type|upper }})
-                                - Uploaded: {{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
-                                <a href="{{ url_for('onboarding.delete_document', doc_id=doc.id) }}" 
-                                   onclick="return confirm('Delete this document?')">
-                                    🗑️ Delete
-                                </a>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p>No documents uploaded yet.</p>
-                    {% endif %}
-                </div>
+            <!-- Password -->
+            <div id="password" class="content-section" style="display:none;">
+                <p>Change or reset your password.</p>
+                <a href="{{ url_for('onboarding.change_password') }}">
+                    <button>Change Password</button>
+                </a>
             </div>
         </div>
     </div>
 
     <script>
         function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+            document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
             document.getElementById(sectionId).style.display = 'block';
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            event.target.classList.add('active');
+            event.target.closest('.nav-link').classList.add('active');
         }
     </script>
 </body>
