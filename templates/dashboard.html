@@ -1,87 +1,223 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Dashboard</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        /* Portal Styles */
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #4F46E5 0%, #4338CA 100%);
+            color: white;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: white;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .profile-email {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .profile-role {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            width: 22px;
+            height: 22px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Flash Messages */
         .flash-messages { margin: 10px 0; padding: 10px; }
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
+
+        /* Document List */
         .document-list { margin: 20px 0; }
         .document-item { padding: 10px; border: 1px solid #ddd; margin: 5px 0; }
+
+        /* Upload Section */
+        .upload-section {
+            margin: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Employee Dashboard</h1>
-    
-    <!-- Flash Messages -->
-    <div class="flash-messages">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">EPortal</div>
+            
+            <div class="profile">
+                <div class="profile-img" id="profileAvatar">👨‍💼</div>
+                <div class="profile-name" id="profileName">John Doe</div>
+                <div class="profile-email" id="profileEmail">john.doe@company.com</div>
+                <div class="profile-role" id="profileRole">Software Engineer</div>
+            </div>
 
-    <!-- Employee Info -->
-    <div>
-        <h2>Welcome, {{ employee.name or 'Employee' }}!</h2>
-        <p>Email: {{ employee.email }}</p>
-        <p>Department: {{ employee.department or 'Not set' }}</p>
-        {% if not employee.is_submitted %}
-            <a href="{{ url_for('onboarding.profile_setup') }}">
-                <button>Complete Your Profile</button>
-            </a>
-        {% else %}
-            <p>✅ Profile Submitted</p>
-            <a href="{{ url_for('onboarding.reset_profile') }}">
-                <button>Reset Profile</button>
-            </a>
-        {% endif %}
-    </div>
-   
-    <div style="margin-top: 20px;">
-        <a href="{{ url_for('onboarding.change_password') }}">
-            <button>Change Password</button>
-        </a>
-    </div>
-
-    <!-- Document Upload Form -->
-    <div class="upload-section">
-        <h3>Upload Documents</h3>
-        <form action="{{ url_for('onboarding.upload_document') }}" method="post" enctype="multipart/form-data">
-            <input type="file" name="document" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
-            <button type="submit">Upload Document</button>
-        </form>
-        <p><small>Allowed formats: PDF, DOC, DOCX, JPG, JPEG, PNG</small></p>
-    </div>
-
-    <!-- Document List -->
-    <div class="document-list">
-        <h3>Your Documents</h3>
-        {% if docs %}
-            {% for doc in docs %}
-                <div class="document-item">
-                    <strong>{{ doc.file_name }}</strong> 
-                    ({{ doc.file_type|upper }})
-                    - Uploaded: {{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
-                    <a href="{{ url_for('onboarding.delete_document', doc_id=doc.id) }}" 
-                       onclick="return confirm('Delete this document?')">
-                        🗑️ Delete
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showDashboard()">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        Dashboard
                     </a>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>No documents uploaded yet.</p>
-        {% endif %}
-    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showApplyLeave()">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Complete your Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showApprovalRequest()">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Change/Reset Password
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showProfile()">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Profile
+                    </a>
+                </li>
+            </ul>
 
-    <!-- Logout -->
-    <div style="margin-top: 20px;">
-        <a href="{{ url_for('onboarding.logout') }}">
-            <button>Logout</button>
-        </a>
-    </div>
-</body>
-</html>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Main Content -->
+        <div style="flex: 1; padding: 30px;">
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Employee Info -->
+            <div>
+                <h2>Welcome, {{ employee.name or 'Employee' }}!</h2>
+                <p>Email: {{ employee.email }}</p>
+                <p>Department: {{ employee.department or 'Not set' }}</p>
+                {% if not employee.is_submitted %}
+                    <a href="{{ url_for('onboarding.profile_setup') }}">
