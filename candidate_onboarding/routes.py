@@ -10,6 +10,7 @@ import uuid
 from datetime import datetime, timezone
 import boto3
 from botocore.exceptions import ClientError
+import json
 
 onboarding_bp = Blueprint('onboarding', __name__)
 
@@ -17,6 +18,7 @@ onboarding_bp = Blueprint('onboarding', __name__)
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'}
 ALLOWED_IMAGES = {'jpg', 'jpeg', 'png'}
 
+# Utility Functions
 def allowed_file(filename, file_type='document'):
     if '.' not in filename:
         return False
@@ -24,6 +26,134 @@ def allowed_file(filename, file_type='document'):
     if file_type == 'image':
         return ext in ALLOWED_IMAGES
     return ext in ALLOWED_EXTENSIONS
+
+#  UPLOAD HANDLER FOR MULTIPLE DOCUMENT CATEGORIES
+def handle_file_uploads(request, employee):
+    """Handle multiple file uploads for different document categories"""
+    try:
+        uploaded_files = []
+        
+        # Education documents
+        education_files = {
+            'ssc': request.files.get('sscDocument'),
+            'intermediate': request.files.get('interDocument'),
+            'graduation': request.files.get('gradDocument'),
+            'post_graduation': request.files.get('postGradDocument')
+        }
+        
+        for doc_type, file in education_files.items():
+            if file and file.filename:
+                upload_result = upload_to_s3(file, f"education/{doc_type}", employee.id)
+                if upload_result:
+                    document = Document(
+                        employee_id=employee.id,
+                        file_url=upload_result['file_url'],
+                        download_url=upload_result['download_url'],
+                        s3_key=upload_result['s3_key'],
+                        file_name=secure_filename(file.filename),
+                        file_type=file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'bin',
+                        document_category='education',
+                        document_type=doc_type,
+                        is_approved=False
+                    )
+                    db.session.add(document)
+                    uploaded_files.append(file.filename)
+        
+        # Identity documents
+        identity_files = {
+            'aadhar': request.files.get('aadharDoc'),
+            'pan': request.files.get('panDoc'),
+            'voter_id': request.files.get('voterDoc'),
+            'driving_license': request.files.get('licenceDoc')
+        }
+        
+        for doc_type, file in identity_files.items():
+            if file and file.filename:
+                upload_result = upload_to_s3(file, f"identity/{doc_type}", employee.id)
+                if upload_result:
+                    document = Document(
+                        employee_id=employee.id,
+                        file_url=upload_result['file_url'],
+                        download_url=upload_result['download_url'],
+                        s3_key=upload_result['s3_key'],
+                        file_name=secure_filename(file.filename),
+                        file_type=file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'bin',
+                        document_category='identity',
+                        document_type=doc_type,
+                        is_approved=False
+                    )
+                    db.session.add(document)
+                    uploaded_files.append(file.filename)
+        
+        # Bank documents
+        bank_file = request.files.get('bankDoc')
+        if bank_file and bank_file.filename:
+            upload_result = upload_to_s3(bank_file, "bank", employee.id)
+            if upload_result:
+                document = Document(
+                    employee_id=employee.id,
+                    file_url=upload_result['file_url'],
+                    download_url=upload_result['download_url'],
+                    s3_key=upload_result['s3_key'],
+                    file_name=secure_filename(bank_file.filename),
+                    file_type=bank_file.filename.rsplit('.', 1)[1].lower() if '.' in bank_file.filename else 'bin',
+                    document_category='bank',
+                    document_type='bank_statement',
+                    is_approved=False
+                )
+                db.session.add(document)
+                uploaded_files.append(bank_file.filename)
+        
+        # Internship documents
+        internship_file = request.files.get('internshipOffer')
+        if internship_file and internship_file.filename:
+            upload_result = upload_to_s3(internship_file, "internship", employee.id)
+            if upload_result:
+                document = Document(
+                    employee_id=employee.id,
+                    file_url=upload_result['file_url'],
+                    download_url=upload_result['download_url'],
+                    s3_key=upload_result['s3_key'],
+                    file_name=secure_filename(internship_file.filename),
+                    file_type=internship_file.filename.rsplit('.', 1)[1].lower() if '.' in internship_file.filename else 'bin',
+                    document_category='internship',
+                    document_type='certificate',
+                    is_approved=False
+                )
+                db.session.add(document)
+                uploaded_files.append(internship_file.filename)
+        
+        # Experience documents
+        experience_files = {
+            'offer_letter': request.files.get('experienceOffer'),
+            'payslip': request.files.get('experiencePayslip'),
+            'relieving_letter': request.files.get('experienceRelieving')
+        }
+        
+        for doc_type, file in experience_files.items():
+            if file and file.filename:
+                upload_result = upload_to_s3(file, f"experience/{doc_type}", employee.id)
+                if upload_result:
+                    document = Document(
+                        employee_id=employee.id,
+                        file_url=upload_result['file_url'],
+                        download_url=upload_result['download_url'],
+                        s3_key=upload_result['s3_key'],
+                        file_name=secure_filename(file.filename),
+                        file_type=file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'bin',
+                        document_category='experience',
+                        document_type=doc_type,
+                        is_approved=False
+                    )
+                    db.session.add(document)
+                    uploaded_files.append(file.filename)
+        
+        print(f"✅ Successfully uploaded {len(uploaded_files)} files: {uploaded_files}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error handling file uploads: {e}")
+        return False
 
 # ==================== AUTHENTICATION ROUTES ====================
 
@@ -146,37 +276,6 @@ def inactive_employees():
     return render_template('inactive_employees.html', employees=inactive_employees)
 
 
-@onboarding_bp.route('/change_username', methods=['GET', 'POST'])
-@login_required
-def change_username():
-    if not current_user.is_admin:
-        flash('Only admin users can change usernames.', 'error')
-        return redirect(url_for('onboarding.dashboard'))
-    
-    if request.method == 'POST':
-        new_username = request.form.get('new_username','').strip()
-        password = request.form.get('password','')
-        
-        # Verify password
-        if not check_password_hash(current_user.password, password):
-            flash('Password is incorrect.', 'error')
-            return redirect(url_for('onboarding.change_username'))
-        
-        # Check if username already exists
-        if User.query.filter_by(username=new_username).first():
-            flash('Username already exists. Please choose a different one.', 'error')
-            return redirect(url_for('onboarding.change_username'))
-        
-        # Update username
-        old_username = current_user.username
-        current_user.username = new_username
-        db.session.commit()
-        
-        flash(f'Username changed from {old_username} to {new_username} successfully!', 'success')
-        return redirect(url_for('onboarding.admin_dashboard'))
-    
-    return render_template('change_username.html')
-
 # ==================== ADMIN ROUTES ====================
 
 @onboarding_bp.route('/admin/dashboard')
@@ -232,53 +331,6 @@ def create_employee():
         return redirect(url_for('onboarding.admin_dashboard'))
 
     return render_template('create_employee.html')
-
-@onboarding_bp.route('/debug/admin_accounts')
-def debug_admin_accounts():
-    """Debug route to see all admin accounts and their emails"""
-    admin_users = User.query.filter_by(is_admin=True).all()
-    
-    result = "<h3>Admin Accounts</h3>"
-    for admin in admin_users:
-        employee = Employee.query.filter_by(user_id=admin.id).first()
-        result += f"""
-        <p><strong>Username:</strong> {admin.username}</p>
-        <p><strong>Email:</strong> {employee.email if employee else 'NO EMPLOYEE RECORD'}</p>
-        <p><strong>Password:</strong> Admin@123</p>
-        <hr>
-        """
-    
-    return result
-
-@onboarding_bp.route('/reset_admin_email')
-def reset_admin_email():
-    """Reset default admin email to a known value"""
-    admin_user = User.query.filter_by(username="admin").first()
-    if not admin_user:
-        return "Admin user not found"
-    
-    # Find or create employee record for admin
-    admin_employee = Employee.query.filter_by(user_id=admin_user.id).first()
-    if not admin_employee:
-        admin_employee = Employee(user_id=admin_user.id, email="admin@company.com")
-        db.session.add(admin_employee)
-    
-    # Set the email to something you know
-    admin_employee.email = "admin@yourcompany.com"
-    admin_employee.name = "Administrator"
-    admin_employee.is_submitted = True
-    admin_employee.is_active = True
-    
-    db.session.commit()
-    
-    return f"""
-    <h3>Admin Email Reset</h3>
-    <p><strong>Username:</strong> admin</p>
-    <p><strong>Email:</strong> admin@yourcompany.com</p>
-    <p><strong>Password:</strong> Admin@123</p>
-    <p>You can now login with email: <strong>admin@yourcompany.com</strong> and password: <strong>Admin@123</strong></p>
-    """
-
 
 @onboarding_bp.route('/admin/documents')
 @login_required
@@ -446,21 +498,156 @@ def profile_setup():
         return redirect(url_for('onboarding.admin_dashboard'))
     
     employee = Employee.query.filter_by(user_id=current_user.id).first()
+    
     if request.method == 'POST':
-        name = request.form.get('name','').strip()
-        email = request.form.get('email','').strip()
-        department = request.form.get('department','').strip()
-        if not name or not email or not department:
-            flash('Please fill in all required fields.', 'error')
+        try:
+            # Personal Details
+            name = request.form.get('fullName','').strip()
+            father_name = request.form.get('fatherName','').strip()
+            address = request.form.get('address','').strip()
+            permanent_address = request.form.get('permanentAddress','').strip()
+            blood_group = request.form.get('bloodGroup','').strip()
+            mobile = request.form.get('mobile','').strip()
+            email = request.form.get('email','').strip()
+            emergency_contact_name = request.form.get('emergencyName','').strip()
+            emergency_contact_number = request.form.get('emergencyContact','').strip()
+            
+            # Validate required fields
+            required_fields = {
+                'name': name,
+                'father_name': father_name,
+                'address': address,
+                'permanent_address': permanent_address,
+                'blood_group': blood_group,
+                'mobile': mobile,
+                'email': email,
+                'emergency_contact_name': emergency_contact_name,
+                'emergency_contact_number': emergency_contact_number
+            }
+            
+            missing_fields = [field for field, value in required_fields.items() if not value]
+            if missing_fields:
+                flash('Please fill all required personal details fields.', 'error')
+                return redirect(url_for('onboarding.profile_setup'))
+            
+            # Education Details
+            education_data = {
+                'ssc': {
+                    'school_name': request.form.get('sscSchoolName'),
+                    'hall_ticket_no': request.form.get('sscHTNo'),
+                    'passout_year': request.form.get('sscPassoutYear'),
+                    'percentage': request.form.get('sscPercentage')
+                },
+                'intermediate': {
+                    'college_name': request.form.get('interCollegeName'),
+                    'hall_ticket_no': request.form.get('interHTNo'),
+                    'passout_year': request.form.get('interPassoutYear'),
+                    'percentage': request.form.get('interPercentage')
+                },
+                'graduation': {
+                    'college_name': request.form.get('gradCollegeName'),
+                    'passout_year': request.form.get('gradPassoutYear'),
+                    'reg_number': request.form.get('gradRegNumber'),
+                    'percentage': request.form.get('gradPercentage')
+                },
+                'post_graduation': {
+                    'college_name': request.form.get('postGradCollegeName'),
+                    'passout_year': request.form.get('postGradPassoutYear'),
+                    'reg_number': request.form.get('postGradRegNumber'),
+                    'percentage': request.form.get('postGradPercentage')
+                }
+            }
+            
+            # Internship Details
+            has_internship = request.form.get('internship') == 'yes'
+            internship_data = {
+                'has_internship': has_internship,
+                'internships': []
+            }
+            
+            if has_internship:
+                # Main internship
+                internship = {
+                    'company_name': request.form.get('internshipCompanyName'),
+                    'designation': request.form.get('internshipDesignation'),
+                    'poc_name': request.form.get('internshipPOC'),
+                    'poc_email': request.form.get('internshipPOCEmail'),
+                    'poc_phone': request.form.get('internshipPOCPhone'),
+                    'date_of_joining': request.form.get('internshipDoj'),
+                    'date_of_relieving': request.form.get('internshipDor')
+                }
+                internship_data['internships'].append(internship)
+                
+                # Additional internships (you'll need to handle dynamic fields)
+                # This is a simplified version - you'll need to implement dynamic field handling
+            
+            # Experience Details
+            has_experience = request.form.get('experience') == 'yes'
+            experience_data = {
+                'has_experience': has_experience,
+                'experiences': []
+            }
+            
+            if has_experience:
+                experience = {
+                    'company_name': request.form.get('experienceCompanyName'),
+                    'designation': request.form.get('experienceDesignation'),
+                    'poc_name': request.form.get('experiencePOC'),
+                    'poc_email': request.form.get('experiencePOCEmail'),
+                    'poc_phone': request.form.get('experiencePOCPhone'),
+                    'date_of_joining': request.form.get('experienceDoj'),
+                    'date_of_relieving': request.form.get('experienceDor')
+                }
+                experience_data['experiences'].append(experience)
+            
+            # Other Details
+            other_data = {
+                'aadhar': {
+                    'number': request.form.get('aadharNumber'),
+                },
+                'pan': {
+                    'number': request.form.get('panNumber'),
+                },
+                'bank': {
+                    'bank_name': request.form.get('bankName'),
+                    'branch_name': request.form.get('branchName'),
+                    'account_number': request.form.get('accountNumber'),
+                    'ifsc_code': request.form.get('ifscCode')
+                },
+                'voter_id': request.form.get('voterid'),
+                'driving_license': request.form.get('Licencenumber')
+            }
+            
+            # Update employee record
+            employee.name = name
+            employee.father_name = father_name
+            employee.address = address
+            employee.permanent_address = permanent_address
+            employee.blood_group = blood_group
+            employee.mobile = mobile
+            employee.email = email
+            employee.emergency_contact_name = emergency_contact_name
+            employee.emergency_contact_number = emergency_contact_number
+            employee.education_details = json.dumps(education_data)
+            employee.internship_details = json.dumps(internship_data)
+            employee.experience_details = json.dumps(experience_data)
+            employee.other_details = json.dumps(other_data)
+            employee.is_submitted = True
+            employee.submitted_at = datetime.utcnow()
+            
+            # Handle file uploads
+            files_handled = handle_file_uploads(request, employee)
+            
+            db.session.commit()
+            
+            flash('Your profile has been submitted successfully!', 'success')
+            return redirect(url_for('onboarding.dashboard'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error submitting profile: {str(e)}', 'error')
             return redirect(url_for('onboarding.profile_setup'))
-        employee.name = name
-        employee.email = email
-        employee.department = department
-        employee.is_submitted = True
-        employee.submitted_at = datetime.now(timezone.utc)
-        db.session.commit()
-        flash('Your profile has been submitted successfully!', 'success')
-        return redirect(url_for('onboarding.dashboard'))
+    
     return render_template('profile_setup.html', employee=employee)
 
 @onboarding_bp.route('/reset_profile')

@@ -1,23 +1,1030 @@
-<!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>Profile Setup</title></head>
-  <body>
-    <h2>Profile Setup</h2>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-        {% for category, msg in messages %}
-          <li><strong>{{ category }}</strong>: {{ msg }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    <form method="post" action="{{ url_for('onboarding.profile_setup') }}">
-      <input type="text" name="name" placeholder="Full name" value="{{ employee.name or '' }}" required><br>
-      <input type="email" name="email" placeholder="Email" value="{{ employee.email or '' }}" required><br>
-      <input type="text" name="department" placeholder="Department" value="{{ employee.department or '' }}" required><br>
-      <button type="submit">Submit Profile</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Employee Dashboard Form</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    .invalid {
+      outline: 2px solid #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <form method="POST" action="{{ url_for('onboarding.profile_setup') }}" enctype="multipart/form-data" id="masterForm">
+  <div class="login-container">
+    <div id="personalDetails" class="personallist" style="display: block;">
+      <h3>Future Invo Employee Dashboards</h3>
+      <h2>Personal Details</h2>
+      <div id="personalFormElement" onsubmit="return false">
+        <div class="personalinput">
+          <label for="fullName">Full Name*</label>
+          <input type="text" id="fullName" placeholder="As Per Aadhaar" name="fullName" required />
+
+          <label for="fatherName">Father Name*</label>
+          <input type="text" id="fatherName" placeholder="Enter your fatherName" name="fatherName" required />
+
+          <label for="address">Address*</label>
+          <input type="text" id="address" placeholder="Enter your address" name="address" required />
+
+          <label for="permanentAddress">Permanent Address*</label>
+          <input type="text" id="permanentAddress" name="permanentAddress" required />
+
+          <div class="row">
+            <div class="col">
+              <label for="bloodGroup">Blood Group*</label>
+              <input type="text" id="bloodGroup" name="bloodGroup" required />
+            </div>
+            <div class="col">
+              <label for="mobile">Mobile*</label>
+              <input type="tel" id="mobile" name="mobile" maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" required />
+            </div>
+          </div>
+
+          <label for="email">Email*</label>
+          <input type="email" id="email" name="email" required />
+          <div class="row">
+            <div class="col">
+              <label for="emergencyName">Emergency contact Name*</label>
+              <input type="text" id="emergencyName" name="emergencyName" placeholder="Emergency contact person" required />
+            </div>
+            <div class="col">
+              <label for="emergencyContact">Emergency Contact Number*</label>
+              <input type="tel" id="emergencyContact" name="emergencyContact" placeholder="Emergency contact number" maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" required />
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="save-btn" onclick="goToSection('personalDetails','loginForm')">Back</button>
+        <button type="button" class="save-next-btn" onclick="goToSection('personalDetails','educationDetails')">Next</button>
+      </div>
+    </div>
+
+    <div id="educationDetails" class="educationlist" style="display: none;">
+      <h2>Educational Details</h2>
+      <div id="educationFormElement" onsubmit="return false">
+        <div class="educationinput">
+          <b><h3>SSC*</h3></b>
+          <div class="inline-fields">
+            <input type="text" id="sscSchoolName" placeholder="School Name" name="sscSchoolName" required />
+            <input type="number" id="sscHTNo" placeholder="Hall Ticket Number" name="sscHTNo" required />
+            <input type="number" id="sscPassoutYear" placeholder="Passout Year" name="sscPassoutYear" required />
+          </div><br>
+          <div class="row">
+            <div class="col">
+              <input type="number" placeholder="Enter Percentage" id="sscPercentage" required />
+            </div>
+            <div class="col">
+              <label for="sscDocument">Upload Document:</label>
+              <input type="file" id="sscDocument" name="sscDocument" accept=".pdf,.doc,.docx,.txt" required />
+            </div>
+          </div>
+
+          <b><h3>Intermediate*</h3></b>
+          <div class="inline-fields">
+            <input type="text" id="interCollegeName" placeholder="College Name" name="interCollegeName" required />
+            <input type="number" id="interHTNo" placeholder="Hall Ticket Number" name="interHTNo" required />
+            <input type="number" id="interPassoutYear" placeholder="Passout Year" name="interPassoutYear" required />
+          </div><br>
+          <div class="row">
+            <div class="col">
+              <input type="number" placeholder="Enter Percentage" id="interPercentage" required/>
+            </div>
+            <div class="col">
+              <label for="interDocument">Upload Document:</label>
+              <input type="file" id="interDocument" name="interDocument" accept=".pdf,.doc,.docx,.txt" required />
+            </div>
+          </div>
+
+          <b><h3>Graduation*</h3></b>
+          <div class="inline-fields">
+            <input type="text" id="gradCollegeName" placeholder="College Name" name="gradCollegeName" required />
+            <input type="number" id="gradPassoutYear" placeholder="Passout Year" name="gradPassoutYear" required />
+            <input type="text" id="gradRegNumber" placeholder="Reg Number" name="gradRegNumber" required />
+          </div><br>
+          <div class="row">
+            <div class="col">
+              <input type="number" id="gradPercentage" placeholder="Enter Percentage" required/>
+            </div>
+            <div class="col">
+              <label for="gradDocument">Upload Document:</label>
+              <input type="file" id="gradDocument" name="gradDocument" accept=".pdf,.doc,.docx,.txt" required />
+            </div>
+          </div>
+
+          <b><h3>Post Graduation(Optional)</h3></b>
+          <div class="inline-fields">
+            <input type="text" id="postGradCollegeName" placeholder="College Name" name="postGradCollegeName" />
+            <input type="number" id="postGradPassoutYear" placeholder="Passout Year" name="postGradPassoutYear" />
+            <input type="text" id="postGradRegNumber" placeholder="Reg Number" name="postGradRegNumber" />
+          </div><br>
+          <div class="row">
+            <div class="col">
+              <input type="number" id="postGradPercentage" placeholder="Enter Percentage" />
+            </div>
+            <div class="col">
+              <label for="postGradDocument">Upload Document:</label>
+              <input type="file" id="postGradDocument" name="postGradDocument" accept=".pdf,.doc,.docx,.txt" />
+            </div>
+          </div>
+
+          <div class="certificates-header">
+            <div id="certificateWrapper">
+              <div id="certificateContainer" class="certificate-container"></div>
+              <h3>Other Certificates (Optional)</h3>
+
+              <button type="button" class="add-cert-btn" onclick="addCertificate()">+</button><br><br>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="save-btn" onclick="goToSection('educationDetails','personalDetails')">Back</button>
+        <button type="button" class="save-next-btn" onclick="goToSection('educationDetails','internshipDetailsSection')">Next</button>
+      </div>
+    </div>
+
+    <div id="internshipDetailsSection" class="internship-section" style="display: none;">
+      <b><h2>Internships</h2></b>
+      <div id="internshipFormElement" onsubmit="return false">
+        <label>
+          <input type="radio" name="internship" value="yes" onclick="toggleInternship(true)">
+          Yes
+        </label>
+        <label>
+          <input type="radio" name="internship" value="no" onclick="toggleInternship(false)">
+          No
+        </label><br>
+
+        <div id="internshipDetails" style="display: none; margin-top: 15px;">
+          <div class="row">
+            <div class="col">
+              <label for="internshipCompanyName">Company Name:</label>
+              <input type="text" id="internshipCompanyName" name="internshipCompanyName" placeholder="Enter company name" required/>
+            </div>
+            <div class="col">
+              <label for="internshipDesignation">Designation:</label>
+              <input type="text" id="internshipDesignation" name="internshipDesignation" placeholder="Enter designation" required/>
+            </div>
+          </div><br>
+          <div class="row">
+            <div class="col">
+              <label for="internshipPOC">POC Name:</label>
+              <input type="text" id="internshipPOC" name="internshipPOC" placeholder="Enter poc name" required title="POC is your supervisor like team lead manager.">
+            </div>
+            <div class="col">
+              <label for="internshipPOCEmail">POC Email:</label>
+              <input type="email" id="internshipPOCEmail" name="internshipPOCEmail" placeholder="Enter poc Email" required/>
+            </div>
+            <div class="col">
+              <label for="internshipPOCPhone">POC Phone:</label>
+              <input type="tel" id="internshipPOCPhone" name="internshipPOCPhone" placeholder="Enter poc contact" required >
+            </div>
+          </div><br>
+          <div class="row">
+            <div class="col">
+              <label for="internshipDoj">Date of Joining:</label>
+              <input type="date" id="internshipDoj" name="internshipDoj" required/>
+            </div>
+            <div class="col">
+              <label for="internshipDor">Date of Relieving:</label>
+              <input type="date" id="internshipDor" name="internshipDor" required>
+            </div>
+            <div class="col">
+              <label for="internshipOffer">Certificate:</label>
+              <input type="file" id="internshipOffer" name="internshipOffer" accept=".pdf,.doc,.docx,.txt" required/>
+            </div>
+          </div>
+          <div id="internshipContainer" class="internship-container"></div>
+          <button type="button" class="add-intern-btn" onclick="addInternship()">+</button><br><br>
+        </div>
+
+        <button type="button" class="save-btn" onclick="goToSection('internshipDetailsSection','educationDetails')">Back</button>
+        <button type="button" class="save-next-btn" onclick="goToSection('internshipDetailsSection','experienceDetailsSection')">Next</button>
+      </div>
+    </div>
+
+    <div id="experienceDetailsSection" class="experience-section" style="display: none;">
+      <b><h2>Work Experience</h2></b>
+      <div id="experienceFormElement" onsubmit="return false">
+        <label>
+          <input type="radio" name="experience" value="yes" onclick="toggleExperience(true)">
+          Yes
+        </label>
+        <label>
+          <input type="radio" name="experience" value="no" onclick="toggleExperience(false)">
+          No
+        </label><br>
+        <div id="experienceDetails" style="display: none; margin-top: 15px;">
+          <div class="row">
+            <div class="col">
+              <label for="experienceCompanyName">Company Name:</label> 
+              <input type="text" id="experienceCompanyName" name="experienceCompanyName" placeholder="Enter company name" required>
+            </div>
+            <div class="col">
+              <label for="experienceDesignation">Designation:</label> 
+              <input type="text" id="experienceDesignation" name="experienceDesignation" placeholder="Enter designation" required>
+            </div>
+            <div class="col">
+              <label for="experienceDoj">Date of Joining:</label> 
+              <input type="date" id="experienceDoj" name="experienceDoj" required>
+            </div>
+          </div><br><br>
+          <div class="row">
+            <div class="col"><label for="experienceDor">Date of Relieving:</label>
+              <input type="date" id="experienceDor" name="experienceDor" required>
+            </div>
+            <div class="col">
+              <label for="experiencePOC">POC Name:</label> 
+              <input type="text" id="experiencePOC" name="experiencePOC" placeholder="Enter poc name" required title="POC is your supervisor like team lead manager.">
+            </div>
+            <div class="col">
+              <label for="experiencePOCEmail">POC Email:</label> 
+              <input type="email" id="experiencePOCEmail" name="experiencePOCEmail" placeholder="Enter poc Email" required>
+            </div>
+            <div class="col">
+              <label for="experiencePOCPhone">POC Phone:</label> 
+              <input type="tel" id="experiencePOCPhone" name="experiencePOCPhone" placeholder="Enter poc Phone" required >
+            </div>
+          </div><br><br>
+          <div class="row">
+            <div class="col">
+              <label for="experienceOffer">Offer Letter:</label>
+              <input type="file" id="experienceOffer" name="experienceOffer" accept=".pdf,.doc,.docx,.txt" required/>
+            </div>
+            <div class="col">
+              <label for="experiencePayslip">Pay Slips:</label>
+              <input type="file" id="experiencePayslip" name="experiencePayslip" accept=".pdf,.doc,.docx,.txt" required />
+            </div>
+            <div class="col">
+              <label for="experienceRelieving">Relieving Letter:</label>
+              <input type="file" id="experienceRelieving" name="experienceRelieving" accept=".pdf,.doc,.docx,.txt" required />
+            </div>
+          </div>
+          <div id="experienceContainer" class="experience-container"></div>
+          <button type="button" class="add-workex-btn" onclick="addExperience()">+</button><br><br>
+        </div>
+
+        <button type="button" class="save-btn" onclick="goToSection('experienceDetailsSection','internshipDetailsSection')">Back</button>
+        <button type="button" class="save-next-btn" onclick="goToSection('experienceDetailsSection','otherDetails')">Next</button>
+      </div>
+    </div>
+    
+    <div id="otherDetails" class="other-details" style="display: none;">
+      <h2>Other Details</h2>
+      <div id="otherDetailsFormElement" onsubmit="return false">
+        <h3>Aadhaar*</h3>
+        <div class="row">
+          <div class="col">
+            <label for="aadharNumber">Aadhaar Number</label>
+            <input type="text" id="aadharNumber" placeholder="Enter your aadhaar number" name="aadharNumber" required />
+          </div>
+          <div class="col">
+            <label>Upload Document:</label>
+            <input type="file" id="aadharDoc" accept=".pdf,.doc,.docx,.txt" required/>
+          </div>
+        </div>
+        <h3>PAN*</h3>
+        <div class="row">
+          <div class="col">
+            <label for="panNumber">PAN Number</label>
+            <input type="text" id="panNumber" placeholder="Enter your PAN number" name="panNumber" required />
+          </div>
+          <div class="col"> 
+            <label>Upload Document:</label>
+            <input type="file" id="panDoc" accept=".pdf,.doc,.docx,.txt" required/>
+          </div>
+        </div>
+        <h3>Bank Details*</h3>
+        <div class="row">
+          <div class="col">
+            <label for="bankName">Bank Name</label>
+            <input type="text" id="bankName" placeholder="Enter your Bankname" name="bankName" required />
+          </div>
+          <div class="col">
+            <label for="branchName">Branch Name</label>
+            <input type="text" id="branchName" placeholder="Enter your Branchname" name="branchName" required />
+          </div>
+          <div class="col">
+            <label for="accountNumber">Account Number</label>
+            <input type="text" id="accountNumber" placeholder="Enter your acc number" name="accountNumber" required />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label for="ifscCode">IFSC Code</label>
+            <input type="text" id="ifscCode" placeholder="Enter your ifsc code" name="ifscCode" required />
+          </div>
+          <div class="col"> 
+            <label>Upload Document:</label>
+            <input type="file" id="bankDoc" accept=".pdf,.doc,.docx,.txt" required/>
+          </div>
+        </div>
+
+        <h3>Voter Card</h3>
+        <div class="row">
+          <div class="col">
+            <label for="voterid">Voter ID</label>
+            <input type="text" id="voterid" placeholder="Enter your voter ID" name="voterid"/>
+          </div>
+          <div class="col">
+            <label>Upload Document:</label>
+            <input type="file" id="voterDoc" accept=".pdf,.doc,.docx,.txt" />
+          </div>
+        </div>
+
+        <h3>Driving Licence</h3>
+        <div class="row">
+          <div class="col">
+            <label for="Licencenumber">Licence Number</label>
+            <input type="text" id="Licencenumber" placeholder="Enter your Licence number"  name="Licencenumber"/>
+          </div>
+          <div class="col">
+            <label>Upload Document:</label>
+            <input type="file" id="licenceDoc" accept=".pdf,.doc,.docx,.txt" />
+          </div>
+        </div>
+
+        <h3>Other Documents</h3>
+        <button type="button" id="addDocBtn" class="add-doc-btn" onclick="addDoc()">+</button><br><br> 
+        <div id="docContainer" class="doc-container"></div>
+
+        <button type="button" class="save-btn" onclick="goToSection('otherDetails','experienceDetailsSection')">Back</button>
+        <button type="button" class="save-next-btn" onclick="goToSection('otherDetails','previewSection')">Preview</button>
+      </div>
+    </div>
+
+    <div id="previewSection" class="preview-section" style="display: none;">
+      <h2>Preview Your Details</h2>
+      <div id="previewContent"></div>
+      <button type="button" class="save-btn" onclick="goToSection('previewSection','otherDetails')">Back</button>
+      <button type="button" class="save-next-btn" onclick="showThankYou()">Submit</button>
+    </div>
+    </div>
     </form>
-    <p><a href="{{ url_for('onboarding.dashboard') }}">Back to dashboard</a></p>
-  </body>
+
+    <div id="thankYouSection" style="display: none; text-align: center; padding: 50px; background: rgba(255,255,255,0.9); border-radius: 20px; width: 80%; max-width: 700px; margin: auto;">
+      <h2>Thank You!</h2>
+      <p>Your response has been submitted successfully.</p>
+    </div>
+  </div>
+</body>
+  <script>
+function isVisible(el) {
+  if (!el) return false;
+  return !!(el.offsetParent !== null || (el.getClientRects && el.getClientRects().length > 0));
+}
+
+function validatePersonalDetails() {
+  let isValid = true;
+  const fields = [
+    document.getElementById("fullName"),
+    document.getElementById("fatherName"),
+    document.getElementById("address"),
+    document.getElementById("permanentAddress"),
+    document.getElementById("bloodGroup"),
+    document.getElementById("mobile"),
+    document.getElementById("email"),
+    document.getElementById("emergencyName"),
+    document.getElementById("emergencyContact")
+  ];
+
+  fields.forEach(field => {
+    if (field) {
+      field.classList.remove("invalid");
+      if (field.value.trim() === "") {
+        field.classList.add("invalid");
+        isValid = false;
+      }
+    }
+  });
+
+  if (!isValid) {
+    alert("Please fill all required fields!");
+  }
+  return isValid;
+}
+
+function validateEducationDetails() {
+  let isValid = true;
+  const fields = [
+    document.getElementById("sscSchoolName"),
+    document.getElementById("sscHTNo"),
+    document.getElementById("sscPassoutYear"),
+    document.getElementById("sscPercentage"),
+    document.getElementById("interCollegeName"),
+    document.getElementById("interHTNo"),
+    document.getElementById("interPassoutYear"),
+    document.getElementById("interPercentage"),
+    document.getElementById("gradCollegeName"),
+    document.getElementById("gradPassoutYear"),
+    document.getElementById("gradRegNumber"),
+    document.getElementById("gradPercentage")
+  ];
+
+  const fileFields = [
+    document.getElementById("sscDocument"),
+    document.getElementById("interDocument"),
+    document.getElementById("gradDocument")
+  ];
+
+  fields.forEach(field => {
+    if (field) {
+      field.classList.remove("invalid");
+      if (field.value.trim() === "") {
+        field.classList.add("invalid");
+        isValid = false;
+      }
+    }
+  });
+
+  fileFields.forEach(field => {
+    if (field) {
+      field.classList.remove("invalid");
+      if (!field.files || field.files.length === 0) {
+        field.classList.add("invalid");
+        isValid = false;
+      }
+    }
+  });
+
+  
+  const certs = document.querySelectorAll('.certificate-entry');
+  certs.forEach(cert => {
+    const inputs = cert.querySelectorAll('input[required]');
+    inputs.forEach(input => {
+      input.classList.remove("invalid");
+      if (input.type === 'file') {
+        if (!input.files || input.files.length === 0) {
+          input.classList.add("invalid");
+          isValid = false;
+        }
+      } else {
+        if (input.value.trim() === "") {
+          input.classList.add("invalid");
+          isValid = false;
+        }
+      }
+    });
+  });
+
+  if (!isValid) {
+    alert("Please fill all required fields!");
+  }
+  return isValid;
+}
+
+function validateInternshipDetails() {
+  // Check if radio is selected
+  const yesRadio = document.querySelector('input[name="internship"][value="yes"]');
+  const noRadio = document.querySelector('input[name="internship"][value="no"]');
+  
+  if (!yesRadio.checked && !noRadio.checked) {
+    alert("Please select Yes or No for Internship!");
+    return false;
+  }
+
+  // If No is selected, validation passes
+  if (noRadio.checked) {
+    return true;
+  }
+
+  // If Yes is selected, validate fields
+  let isValid = true;
+  const internDetails = document.getElementById("internshipDetails");
+  
+  if (internDetails && isVisible(internDetails)) {
+    const fields = internDetails.querySelectorAll('input[required]');
+    
+    fields.forEach(field => {
+      field.classList.remove("invalid");
+      if (field.type === 'file') {
+        if (!field.files || field.files.length === 0) {
+          field.classList.add("invalid");
+          isValid = false;
+        }
+      } else {
+        if (field.value.trim() === "") {
+          field.classList.add("invalid");
+          isValid = false;
+        }
+      }
+    });
+
+    // Validate additional internships
+    const additionalInterns = document.querySelectorAll('.internship-entry');
+    additionalInterns.forEach(entry => {
+      const entryFields = entry.querySelectorAll('input[required]');
+      entryFields.forEach(field => {
+        field.classList.remove("invalid");
+        if (field.type === 'file') {
+          if (!field.files || field.files.length === 0) {
+            field.classList.add("invalid");
+            isValid = false;
+          }
+        } else {
+          if (field.value.trim() === "") {
+            field.classList.add("invalid");
+            isValid = false;
+          }
+        }
+      });
+    });
+  }
+
+  if (!isValid) {
+    alert("Please fill all required internship fields!");
+  }
+  return isValid;
+}
+
+function validateExperienceDetails() {
+  // Check if radio is selected
+  const yesRadio = document.querySelector('input[name="experience"][value="yes"]');
+  const noRadio = document.querySelector('input[name="experience"][value="no"]');
+  
+  if (!yesRadio.checked && !noRadio.checked) {
+    alert("Please select Yes or No for Work Experience!");
+    return false;
+  }
+
+  // If No is selected, validation passes
+  if (noRadio.checked) {
+    return true;
+  }
+
+  // If Yes is selected, validate fields
+  let isValid = true;
+  const expDetails = document.getElementById("experienceDetails");
+  
+  if (expDetails && isVisible(expDetails)) {
+    const fields = expDetails.querySelectorAll('input[required]');
+    
+    fields.forEach(field => {
+      field.classList.remove("invalid");
+      if (field.type === 'file') {
+        if (!field.files || field.files.length === 0) {
+          field.classList.add("invalid");
+          isValid = false;
+        }
+      } else {
+        if (field.value.trim() === "") {
+          field.classList.add("invalid");
+          isValid = false;
+        }
+      }
+    });
+
+    // Validate additional experiences
+    const additionalExps = document.querySelectorAll('.experience-entry');
+    additionalExps.forEach(entry => {
+      const entryFields = entry.querySelectorAll('input[required]');
+      entryFields.forEach(field => {
+        field.classList.remove("invalid");
+        if (field.type === 'file') {
+          if (!field.files || field.files.length === 0) {
+            field.classList.add("invalid");
+            isValid = false;
+          }
+        } else {
+          if (field.value.trim() === "") {
+            field.classList.add("invalid");
+            isValid = false;
+          }
+        }
+      });
+    });
+  }
+
+  if (!isValid) {
+    alert("Please fill all required work experience fields!");
+  }
+  return isValid;
+}
+
+function validateOtherDetails() {
+  let isValid = true;
+  
+  const requiredFields = [
+    document.getElementById("aadharNumber"),
+    document.getElementById("aadharDoc"),
+    document.getElementById("panNumber"),
+    document.getElementById("panDoc"),
+    document.getElementById("bankName"),
+    document.getElementById("branchName"),
+    document.getElementById("accountNumber"),
+    document.getElementById("ifscCode"),
+    document.getElementById("bankDoc")
+  ];
+
+  requiredFields.forEach(field => {
+    if (field) {
+      field.classList.remove("invalid");
+      if (field.type === 'file') {
+        if (!field.files || field.files.length === 0) {
+          field.classList.add("invalid");
+          isValid = false;
+        }
+      } else {
+        if (field.value.trim() === "") {
+          field.classList.add("invalid");
+          isValid = false;
+        }
+      }
+    }
+  });
+
+  // Validate dynamic other documents
+  const otherDocs = document.querySelectorAll('.doc-entry');
+  otherDocs.forEach(entry => {
+    const entryFields = entry.querySelectorAll('input[required]');
+    entryFields.forEach(field => {
+      field.classList.remove("invalid");
+      if (field.type === 'file') {
+        if (!field.files || field.files.length === 0) {
+          field.classList.add("invalid");
+          isValid = false;
+        }
+      } else {
+        if (field.value.trim() === "") {
+          field.classList.add("invalid");
+          isValid = false;
+        }
+      }
+    });
+  });
+
+  if (!isValid) {
+    alert("Please fill all required fields in Other Details!");
+  }
+  return isValid;
+}
+
+function goToSection(fromId, toId) {
+  const validators = {
+    'personalDetails': validatePersonalDetails,
+    'educationDetails': validateEducationDetails,
+    'internshipDetailsSection': validateInternshipDetails,
+    'experienceDetailsSection': validateExperienceDetails,
+    'otherDetails': validateOtherDetails
+  };
+
+  const validator = validators[fromId];
+  if (validator) {
+    const ok = validator();
+    if (!ok) return;
+  }
+
+  const sectionIds = [
+    'personalDetails','educationDetails',
+    'internshipDetailsSection','experienceDetailsSection','otherDetails',
+    'previewSection','thankYouSection'
+  ];
+  sectionIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
+  const toEl = document.getElementById(toId);
+  if (toEl) toEl.style.display = 'block';
+
+  if (toId === 'previewSection') buildPreview();
+}
+
+function toggleInternship(isInternship) {
+  const details = document.getElementById("internshipDetails");
+  details.style.display = isInternship ? "block" : "none";
+}
+
+function toggleExperience(isExperienced) {
+  const details = document.getElementById("experienceDetails");
+  details.style.display = isExperienced ? "block" : "none";
+}
+
+function addCertificate() {
+  const container = document.getElementById("certificateContainer");
+  const certBlock = document.createElement("div");
+  certBlock.classList.add("certificate-entry");
+
+  certBlock.innerHTML = `
+    <div class="row">
+      <div class="col">
+        <label>Course Name:</label>
+        <input type="text" placeholder="Course Name" name="courseName" required>
+      </div>
+      <div class="col">
+        <label>Institute Name:</label>
+        <input type="text" placeholder="Institute Name" name="instituteName" required>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <label>Certificate Number:</label>
+        <input type="text" placeholder="Certificate Number" name="certificateNumber" required>
+      </div>
+      <div class="col">
+        <label>Upload Certificate:</label>
+        <input type="file" name="certificateFile" accept=".pdf,.jpg,.png" required>
+      </div>
+    </div>
+    <button type="button" class="remove-cert-btn" onclick="removeCertificate(this)">
+      <i class="fa-solid fa-trash"></i> 
+    </button>
+  `;
+
+  container.appendChild(certBlock);
+}
+
+function removeCertificate(button) {
+  const entry = button.closest('.certificate-entry');
+  if (entry) entry.remove();
+}
+
+function addDoc() {
+  const container = document.getElementById("docContainer");
+  const docBlock = document.createElement("div");
+  docBlock.classList.add("doc-entry");
+
+  docBlock.innerHTML = `
+    <div class="row">
+      <div class="col">
+        <label>Document Name</label>
+        <input type="text" name="otherDocName" required />
+        <label>Document Number</label>
+        <input type="text" name="otherDocNumber" required />
+      </div>
+      <div class="col">
+        <label>Issuing Authority</label>
+        <input type="text" name="otherDocIssuer" required />
+        <label>Upload Document:</label>
+        <input type="file" name="otherDocFile" accept=".pdf,.doc,.docx,.txt" required />
+      </div>
+    </div>
+    <button type="button" class="remove-doc-btn" onclick="removeDoc(this)">
+      <i class="fa-solid fa-trash"></i> 
+    </button>
+  `;
+
+  container.appendChild(docBlock);
+}
+
+function removeDoc(button) {
+  const entry = button.closest('.doc-entry');
+  if (entry) entry.remove();
+}
+
+function addInternship() {
+  const container = document.getElementById("internshipContainer");
+  const internBlock = document.createElement("div");
+  internBlock.classList.add("internship-entry");
+  internBlock.style.marginTop = "20px";
+  internBlock.style.padding = "15px";
+  internBlock.style.border = "1px solid #ddd";
+  internBlock.style.borderRadius = "8px";
+  internBlock.style.background = "#f9f9f9";
+
+  internBlock.innerHTML = `
+    <h4 style="margin-top: 0;">Additional Internship</h4>
+    <div class="row">
+      <div class="col">
+        <label>Company Name:</label> 
+        <input type="text" name="internshipCompanyName" placeholder="Enter company name" required/>
+      </div>
+      <div class="col">
+        <label>Designation:</label> 
+        <input type="text" name="internshipDesignation" placeholder="Enter designation" required/>
+      </div>
+    </div><br>
+    <div class="row">
+      <div class="col">
+        <label>POC Name:</label> 
+        <input type="text" name="internshipPOC" placeholder="Enter poc name" required>
+      </div>
+      <div class="col">
+        <label>POC Email:</label> 
+        <input type="email" name="internshipPOCEmail" placeholder="Enter poc Email" required/>
+      </div>
+      <div class="col">
+        <label>POC Phone:</label> 
+        <input type="tel" name="internshipPOCPhone" placeholder="Enter poc contact" required >
+      </div>
+    </div><br>
+    <div class="row">
+      <div class="col">
+        <label>Date of Joining:</label> 
+        <input type="date" name="internshipDoj" required/>
+      </div>
+      <div class="col">
+        <label>Date of Relieving:</label> 
+        <input type="date" name="internshipDor" required>
+      </div>
+      <div class="col">
+        <label>Certificate:</label> 
+        <input type="file" name="internshipOffer" accept=".pdf,.doc,.docx,.txt" required/>
+      </div>
+    </div>
+    <button type="button" class="remove-intern-btn" onclick="removeInternship(this)">
+      <i class="fa-solid fa-trash"></i> 
+    </button>
+  `;
+
+  container.appendChild(internBlock);
+}
+
+function removeInternship(button) {
+  const entry = button.closest('.internship-entry');
+  if (entry) entry.remove();
+}
+
+function addExperience() {
+  const container = document.getElementById("experienceContainer");
+  const expBlock = document.createElement("div");
+  expBlock.classList.add("experience-entry");
+  expBlock.style.marginTop = "20px";
+  expBlock.style.padding = "15px";
+  expBlock.style.border = "1px solid #ddd";
+  expBlock.style.borderRadius = "8px";
+  expBlock.style.background = "#f9f9f9";
+
+  expBlock.innerHTML = `
+    <h4 style="margin-top: 0;">Additional Experience</h4>
+    <div class="row">
+      <div class="col">
+        <label>Company Name:</label> 
+        <input type="text" name="experienceCompanyName" placeholder="Enter company name" required>
+      </div>
+      <div class="col">
+        <label>Designation:</label> 
+        <input type="text" name="experienceDesignation" placeholder="Enter designation" required>
+      </div>
+      <div class="col">
+        <label>Date of Joining:</label> 
+        <input type="date" name="experienceDoj" required>
+      </div>
+    </div><br><br>
+    <div class="row">
+      <div class="col">
+        <label>Date of Relieving:</label>
+        <input type="date" name="experienceDor" required>
+      </div>
+      <div class="col">
+        <label>POC Name:</label> 
+        <input type="text" name="experiencePOC" placeholder="Enter poc name" required>
+      </div>
+      <div class="col">
+        <label>POC Email:</label> 
+        <input type="email" name="experiencePOCEmail" placeholder="Enter poc Email" required>
+      </div>
+      <div class="col">
+        <label>POC Phone:</label> 
+        <input type="tel" name="experiencePOCPhone" placeholder="Enter poc Phone" required >
+      </div>
+    </div><br><br>
+    <div class="row">
+      <div class="col">
+        <label>Offer Letter:</label>
+        <input type="file" name="experienceOffer" accept=".pdf,.doc,.docx,.txt" required/>
+      </div>
+      <div class="col">
+        <label>Pay Slips:</label>
+        <input type="file" name="experiencePayslip" accept=".pdf,.doc,.docx,.txt" required />
+      </div>
+      <div class="col">
+        <label>Relieving Letter:</label>
+        <input type="file" name="experienceRelieving" accept=".pdf,.doc,.docx,.txt" required />
+      </div>
+    </div>
+    <button type="button" class="remove-exp-btn" onclick="removeExperience(this)">
+      <i class="fa-solid fa-trash"></i>
+    </button>
+  `;
+
+  container.appendChild(expBlock);
+}
+
+function removeExperience(button) {
+  const entry = button.closest('.experience-entry');
+  if (entry) entry.remove();
+}
+
+function buildPreview() {
+  const previewSection = document.getElementById('previewContent');
+
+  const fullName = document.getElementById("fullName")?.value || '';
+  const fatherName = document.getElementById("fatherName")?.value || '';
+  const address = document.getElementById("address")?.value || '';
+  const permanentAddress = document.getElementById("permanentAddress")?.value || '';
+  const bloodGroup = document.getElementById("bloodGroup")?.value || '';
+  const mobile = document.getElementById("mobile")?.value || '';
+  const email = document.getElementById("email")?.value || '';
+  const emergencyName = document.getElementById("emergencyName")?.value || '';
+  const emergencyContact = document.getElementById("emergencyContact")?.value || '';
+
+  const sscSchool = document.getElementById("sscSchoolName")?.value || '';
+  const sscHT = document.getElementById("sscHTNo")?.value || '';
+  const sscYear = document.getElementById("sscPassoutYear")?.value || '';
+  const interCollege = document.getElementById("interCollegeName")?.value || '';
+  const interHT = document.getElementById("interHTNo")?.value || '';
+  const interYear = document.getElementById("interPassoutYear")?.value || '';
+  const gradCollege = document.getElementById("gradCollegeName")?.value || '';
+  const gradYear = document.getElementById("gradPassoutYear")?.value || '';
+  const postGradCollege = document.getElementById("postGradCollegeName")?.value || '';
+  const postGradYear = document.getElementById("postGradPassoutYear")?.value || '';
+
+  let internshipHTML = '<p>No Internship</p>';
+  const intYes = document.querySelector('input[name="internship"][value="yes"]')?.checked;
+  if (intYes) {
+    internshipHTML = `
+      <p><b>Company Name:</b> ${document.getElementById("internshipCompanyName")?.value || ''}</p>
+      <p><b>Designation:</b> ${document.getElementById("internshipDesignation")?.value || ''}</p>
+      <p><b>DOJ:</b> ${document.getElementById("internshipDoj")?.value || ''}</p>
+      <p><b>DOR:</b> ${document.getElementById("internshipDor")?.value || ''}</p>
+    `;
+  }
+
+  let experienceHTML = '<p>No Experience</p>';
+  const expYes = document.querySelector('input[name="experience"][value="yes"]')?.checked;
+  if (expYes) {
+    experienceHTML = `
+      <p><b>Company Name:</b> ${document.getElementById("experienceCompanyName")?.value || ''}</p>
+      <p><b>Designation:</b> ${document.getElementById("experienceDesignation")?.value || ''}</p>
+      <p><b>DOJ:</b> ${document.getElementById("experienceDoj")?.value || ''}</p>
+      <p><b>DOR:</b> ${document.getElementById("experienceDor")?.value || ''}</p>
+    `;
+  }
+
+  const aadhar = document.getElementById("aadharNumber")?.value || '';
+  const pan = document.getElementById("panNumber")?.value || '';
+  const bankName = document.getElementById("bankName")?.value || '';
+  const account = document.getElementById("accountNumber")?.value || '';
+  const ifsc = document.getElementById("ifscCode")?.value || '';
+  const branch = document.getElementById("branchName")?.value || '';
+
+  const certContainer = document.getElementById("certificateContainer");
+  let certificatesHTML = '';
+  if (certContainer) {
+    const certs = certContainer.querySelectorAll('.certificate-entry');
+    certs.forEach((cert, index) => {
+      const course = cert.querySelector('input[name="courseName"]')?.value || '';
+      const institute = cert.querySelector('input[name="instituteName"]')?.value || '';
+      certificatesHTML += `<p><b>Certificate ${index + 1}:</b> ${course} - ${institute}</p>`;
+    });
+  }
+
+  const previewHTML = `
+    <h3>Personal Details</h3>
+    <p><b>Full Name:</b> ${fullName}</p>
+    <p><b>Father Name:</b> ${fatherName}</p>
+    <p><b>Address:</b> ${address}</p>
+    <p><b>Permanent Address:</b> ${permanentAddress}</p>
+    <p><b>Blood Group:</b> ${bloodGroup}</p>
+    <p><b>Mobile:</b> ${mobile}</p>
+    <p><b>Email:</b> ${email}</p>
+    <p><b>Emergency Contact:</b> ${emergencyName} (${emergencyContact})</p>
+
+    <h3>Education Details</h3>
+    <p><b>SSC:</b> ${sscSchool}, Hall Ticket: ${sscHT}, Passout Year: ${sscYear}</p>
+    <p><b>Intermediate:</b> ${interCollege}, Hall Ticket: ${interHT}, Passout Year: ${interYear}</p>
+    <p><b>Graduation:</b> ${gradCollege}, Passout Year: ${gradYear}</p>
+    ${postGradCollege ? `<p><b>Post Graduation:</b> ${postGradCollege}, Passout Year: ${postGradYear}</p>` : ''}
+
+    <h3>Internship</h3>
+    ${internshipHTML}
+
+    <h3>Experience</h3>
+    ${experienceHTML}
+
+    <h3>Other Certificates</h3>
+    ${certificatesHTML || '<p>No Certificates</p>'}
+
+    <h3>Other Details</h3>
+    <p><b>Aadhar:</b> ${aadhar}</p>
+    <p><b>PAN:</b> ${pan}</p>
+    <p><b>Bank Name:</b> ${bankName}</p>
+    <p><b>Account Number:</b> ${account}</p>
+    <p><b>IFSC Code:</b> ${ifsc}</p>
+    <p><b>Branch Name:</b> ${branch}</p>
+  `;
+
+  previewSection.innerHTML = previewHTML;
+}
+
+function showThankYou() {
+  const ids = ['loginForm','forgotForm','personalDetails','educationDetails','experienceDetailsSection','internshipDetailsSection','otherDetails','previewSection'];
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  document.getElementById('thankYouSection').style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  showLoginForm();
+});
+
+document.querySelectorAll("input, select, textarea").forEach(el => {
+  el.addEventListener("input", () => el.classList.remove("invalid"));
+  el.addEventListener("change", () => el.classList.remove("invalid"));
+});
+</script>
+</body>
 </html>
+           

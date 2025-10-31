@@ -28,7 +28,7 @@ def generate_token(user_id, token_type='reset'):
     payload = {
         'user_id': user_id,
         'token_type': token_type,
-        'exp': datetime.utcnow() + timedelta(hours=24)
+        'exp': datetime.timezone.utc() + timedelta(hours=24)
     }
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
@@ -71,11 +71,10 @@ def upload_to_s3(file, folder_name, employee_id):
             }
         )
         
-        # Generate presigned URL for download (valid for 1 hour)
+        # Generate presigned URL for download
         download_url = s3_client.generate_presigned_url(
             'get_object',
             Params={'Bucket': bucket_name, 'Key': s3_key},
-            ExpiresIn=3600
         )
         
         return {

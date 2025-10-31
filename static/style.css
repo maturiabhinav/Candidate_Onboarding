@@ -1,0 +1,1126 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.invalid {
+  outline: 2px solid #e74c3c;
+}
+ 
+.input-error {
+    border: 2px solid red !important;
+    animation: shake 0.2s ease-in-out 0s 2;
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0px); }
+    25% { transform: translateX(3px); }
+    50% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+    100% { transform: translateX(0px); }
+}
+
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loginForm {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(35px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  height: auto;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.loginForm:hover {
+  transform: translateY(-5px);
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #fff;
+  font-weight: 400;
+  font-size: 28px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+input {
+  width: 100%;
+  height: 40px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+input:focus {
+  background: rgba(255, 255, 255, 0.3);
+  outline: none;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+
+
+.login-btn,
+.save-btn,
+.save-next-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin-top: 10px;
+}
+
+.save-next-btn{
+  float: right;
+}
+.login-btn:hover,
+.save-btn:hover,
+.save-next-btn:hover {
+  background: linear-gradient(45deg, #5a6fd8, #6a4190);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.personallist {
+  background: rgba(255, 255, 255, 0.9); 
+  color: #000;
+  padding: 30px;
+  border-radius: 20px;
+  width: 600px;
+  
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  animation: fadeIn 0.5s ease-in;
+  font-size: 16px;
+}
+
+.personallist h2 {
+  color: #333;
+  text-align: center;
+  font-size: 24px;
+}
+
+.personallist h3 {
+  color: #333;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.personalinput label {
+  color: #000;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.personalinput input {
+  background: #f2f2f2;
+  color: #000;
+  border: 1px solid #ccc;
+  height: 35px;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.persolab{
+  width: 40%;
+}
+
+.personalinput input:focus {
+  background: #fff;
+  border-color: #667eea;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.row {
+  display: flex;
+  gap: 15px;
+}
+
+.col {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+}
+
+.save-btn {
+  width: 120px;
+  font-size: 14px;
+}
+
+.save-next-btn {
+  width: 100px;
+  font-size: 14px;
+}
+
+.inline-fields {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.inline-fields input {
+  flex: 1; 
+  min-width: 150px; 
+}
+
+
+.educationlist {
+  background: rgba(255, 255, 255, 0.9); 
+  color: #000;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  animation: fadeIn 0.5s ease-in;
+  font-size: 16px;
+}
+
+.educationlist h2 {
+  color: #333;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.educationlist h3 {
+  color: #333;
+  font-size: 18px;
+}
+
+.educationinput input {
+  background: #f2f2f2;
+  color: #000;
+  border: 1px solid #ccc;
+  height: 35px;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+input::placeholder {
+  color: #888787;
+  font-size: 14px;
+}
+
+.educationinput input:focus {
+  background: #fff;
+  border-color: #667eea;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.educationinput label{
+  color: #000;
+  font-size: 14px;
+}
+
+.certificate-container {
+  margin-top: 10px;
+}
+
+.certificate-entry {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.add-cert-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  float: right;
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: block;
+  margin: 10px 0 0 0;
+}
+
+.add-cert-btn i {
+  margin-right: 3px;
+}
+
+.remove-cert-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.remove-cert-btn i {
+  font-size: 12px;
+}
+
+
+
+
+
+.remove-bank-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.remove-bank-btn i {
+  font-size: 12px;
+}
+
+.add-workex-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  float: right;
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: block;
+  margin: 10px 0 0 0;
+}
+
+.add-workex-btn i {
+  margin-right: 3px;
+}
+
+
+.remove-exp-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.remove-exp-btn i {
+  font-size: 12px;
+}
+
+.add-intern-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  float: right;
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: block;
+  margin: 10px 0 0 0;
+}
+
+.add-intern-btn i {
+  margin-right: 3px;
+}
+
+.remove-intern-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.remove-intern-btn i {
+  font-size: 12px;
+}
+
+
+.doc-container {
+  margin-top: 10px;
+}
+
+.doc-entry {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.add-doc-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  float: right;
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: block;
+  margin: 10px 0 0 0;
+}
+
+.add-doc-btn i {
+  margin-right: 3px;
+}
+
+.remove-doc-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.remove-doc-btn i {
+  font-size: 12px;
+}
+
+.save-btn {
+  width: 120px;
+}
+
+.save-next-btn {
+  width: 120px;
+}
+
+.certificate-container {
+  margin-bottom: 10px;
+}
+
+#internshipDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#internshipDetails input {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  height: 35px;
+  font-size: 14px;
+}
+
+.internship-section {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  animation: fadeIn 0.5s ease-in;
+  font-size: 16px;
+}
+
+.internship-section h2 {
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.internship-section label {
+  display: inline-block;
+  margin-right: 20px;
+  color: #000;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.internship-section input[type="radio"] {
+  margin-right: 5px;
+  accent-color: #667eea;
+  transform: scale(1.2);
+}
+
+.internship-section input[type="date"]{
+  color: #8a8989;
+}
+#internshipDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+#internshipDetails label {
+  color: #000;
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+#internshipDetails input {
+  background: #f2f2f2;
+  color: #000;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  height: 35px;
+  font-size: 14px;
+}
+
+.internship-section input[type="radio"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #4CAF50; 
+  cursor: pointer;
+}
+#internshipDetails input:focus {
+  background: #fff;
+  border-color: #667eea;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+  outline: none;
+}
+
+#experienceDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#experienceDetails input {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  height: 35px;
+  font-size: 14px;
+}
+
+.experience-section {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  animation: fadeIn 0.5s ease-in;
+  font-size: 16px;
+}
+
+.experience-section h2 {
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.experience-section label {
+  display: inline-block;
+  margin-right: 20px;
+  color: #000;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.experience-section input[type="radio"] {
+  margin-right: 5px;
+  accent-color: #667eea;
+  transform: scale(1.2);
+}
+
+.experience-section input[type="date"]{
+  color: #8a8989;
+}
+#experienceDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+#experienceDetails label {
+  color: #000;
+  font-weight: 500;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+#experienceDetails input {
+  background: #f2f2f2;
+  color: #000;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  height: 35px;
+  font-size: 14px;
+}
+
+.experience-section input[type="radio"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #4CAF50; 
+  cursor: pointer;
+}
+#experienceDetails input:focus {
+  background: #fff;
+  border-color: #667eea;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+  outline: none;
+}
+
+.other-details {
+  background: rgba(255, 255, 255, 0.9); 
+  color: #000;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  animation: fadeIn 0.5s ease-in;
+  font-size: 16px;
+}
+
+.other-details h2 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.other-details h3 {
+  color: #333;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.other-details label {
+  color: #000;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.other-details input {
+  background: #f2f2f2;
+  color: #000;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 10px;
+  height: 35px;
+  font-size: 14px;
+}
+
+.other-details input:focus {
+  background: #fff;
+  border-color: #667eea;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+  outline: none;
+}
+
+.other-details input[type="file"] {
+  margin-bottom: 20px;
+  color: #000;
+  font-size: 14px;
+}
+
+.save-btn,
+.save-next-btn {
+  width: 120px;
+  margin-top: 10px;
+}
+
+
+.loginForm,
+.personallist,
+.educationlist,
+.internship-section,
+.experience-section,
+.other-details {
+  max-height: 90vh; 
+  overflow-y: auto;  
+}
+
+
+.preview-section {
+  background: rgba(255, 255, 255, 0.95);
+  color: #000;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  font-size: 16px;
+  animation: fadeIn 0.5s ease-in;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 20px auto;
+}
+
+.preview-section h2 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.preview-section h3 {
+  font-size: 20px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 3px;
+  color: #333;
+}
+
+.preview-section p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.preview-section .save-btn,
+.preview-section .save-next-btn {
+  width: 120px;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.preview-section .save-next-btn {
+ 
+  width: 250px;
+  margin-left: 20px;
+}
+
+#thankYouSection {
+  display: none; 
+  text-align: center;
+  padding: 60px 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  width: 80%;
+  max-width: 700px;
+  margin: 50px auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease-in;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#thankYouSection h2 {
+  font-size: 60px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+#thankYouSection p {
+  font-size: 28px;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+#thankYouSection button {
+  padding: 18px 40px;
+  font-size: 28px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+#thankYouSection button:hover {
+  background: linear-gradient(45deg, #5a6fd8, #6a4190);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+    height: auto; 
+    overflow: auto;
+  }
+
+  .login-container {
+    height: auto;
+    padding: 20px;
+  }
+
+  .loginForm {
+    width: 90%;
+    max-width: 700px;
+    padding: 30px;
+    height: auto;
+  }
+
+  h2 {
+    font-size: 40px;
+  }
+
+  label {
+    font-size: 25px;
+  }
+
+  input {
+    height: 40px;
+    font-size: 20px;
+  }
+
+  input::placeholder {
+    font-size: 20px;
+  }
+  .loginForm h2{
+    font-size: 35px;
+  }
+
+  .login-btn,
+  .save-btn,
+  .save-next-btn {
+    font-size: 24px;
+    padding: 15px;
+  }
+
+  a {
+    font-size: 22px;
+  }
+
+  .personallist,
+  .educationlist,
+  .internship-section,
+  .experience-section,
+  .other-details,
+  .preview-section {
+    width: 95%;
+    padding: 30px;
+    font-size: 20px;
+  }
+
+  .personallist h2,
+  .educationlist h2,
+  .internship-section h2,
+  .experience-section h2,
+  .other-details h2,
+  .preview-section h2 {
+    font-size: 30px;
+  }
+
+  .personallist h3,
+  .educationlist h3,
+  .other-details h3 {
+    font-size: 25px;
+  }
+
+  .personalinput label,
+  .educationinput label,
+  .other-details label {
+    font-size: 18px;
+    height: 40px;
+  }
+
+  .personalinput input,
+  .educationinput input,
+  .other-details input {
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .col {
+    flex: none;
+  }
+
+  .persolab {
+    width: 100%;
+  }
+
+  .inline-fields {
+    flex-direction: column;
+  }
+
+  .inline-fields input {
+    min-width: auto;
+  }
+
+  .save-btn,
+  .save-next-btn {
+    width: 35%;
+    font-size: 20px;
+  }
+  .save-btn{
+    float: left;
+  }
+  .save-next-btn{
+    float: right;
+  }
+
+
+
+
+  .certificate-container,
+  .bank-container,
+  .doc-container {
+    margin-top: 10px;
+  }
+
+  .certificate-entry,
+  .bank-entry,
+  .doc-entry {
+    padding: 10px;
+  }
+
+  .add-cert-btn,
+  .add-bank-btn,
+  .add-doc-btn {
+    font-size: 24px;
+    padding: 6px 10px;
+  }
+
+  .remove-cert-btn,
+  .remove-bank-btn,
+  .remove-doc-btn {
+    padding: 4px 8px;
+  }
+
+  #internshipDetails,
+  #experienceDetails {
+    gap: 10px;
+  }
+
+  #internshipDetails input,
+  #experienceDetails input {
+    height: 50px;
+    font-size: 20px;
+  }
+
+  #internshipDetails label,
+  #experienceDetails label {
+    font-size: 24px;
+  }
+
+  .internship-section label,
+  .experience-section label {
+    font-size: 22px;
+    margin-right: 20px;
+  }
+
+  .preview-section h3 {
+    font-size: 25px;
+  }
+
+  .preview-section p {
+    font-size: 24px;
+  }
+
+  #thankYouSection {
+    width: 95%;
+    padding: 40px 20px;
+  }
+
+  #thankYouSection h2 {
+    font-size: 30px;
+  }
+
+  #thankYouSection p {
+    font-size: 24px;
+  }
+
+  #thankYouSection button {
+    font-size: 24px;
+    padding: 15px 30px;
+  }
+
+ 
+  .header {
+    padding: 15px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .hamburger {
+    width: 24px;
+    height: 18px;
+  }
+
+  .nav-links {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .nav-links a {
+    padding: 10px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+ 
+  .loginForm {
+    width: 80%;
+    padding: 40px;
+  }
+
+  h2 {
+    font-size: 60px;
+  }
+
+  label {
+    font-size: 35px;
+  }
+
+  input {
+    height: 70px;
+    font-size: 22px;
+  }
+
+  .login-btn,
+  .save-btn,
+  .save-next-btn {
+    font-size: 32px;
+  }
+
+  .personallist,
+  .educationlist,
+  .internship-section,
+  .experience-section,
+  .other-details,
+  .preview-section {
+    width: 85%;
+    padding: 40px;
+  }
+
+  .personallist h2,
+  .educationlist h2,
+  .internship-section h2,
+  .experience-section h2,
+  .other-details h2,
+  .preview-section h2 {
+    font-size: 35px;
+  }
+
+  .save-btn,
+  .save-next-btn {
+    width: 180px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+  }
+
+  .nav-links a {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1025px) {
+  
+  .loginForm,
+  .personallist,
+  .educationlist,
+  .internship-section,
+  .experience-section,
+  .other-details,
+  .preview-section {
+    max-width: 900px;
+  }
+}
