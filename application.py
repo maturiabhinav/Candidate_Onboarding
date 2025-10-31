@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, redirect, url_for
 from candidate_onboarding import db, login_manager, mail
 from candidate_onboarding.routes import onboarding_bp
 from candidate_onboarding.models import User, Employee
