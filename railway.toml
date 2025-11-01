@@ -3,7 +3,3 @@ builder = "nixpacks"
 
 [deploy]
 startCommand = "python application.py"
-
-[[services]]
-name = "web"
-run = "python application.py"
