@@ -27,7 +27,7 @@ def allowed_file(filename, file_type='document'):
         return ext in ALLOWED_IMAGES
     return ext in ALLOWED_EXTENSIONS
 
-#  UPLOAD HANDLER FOR MULTIPLE DOCUMENT CATEGORIES
+# UPLOAD HANDLER FOR MULTIPLE DOCUMENT CATEGORIES
 def handle_file_uploads(request, employee):
     """Handle multiple file uploads for different document categories"""
     try:
@@ -165,7 +165,7 @@ def login():
         return redirect(url_for('onboarding.dashboard'))
 
     if request.method == 'POST':
-        email = request.form.get('email','').strip().lower()  # Normalize email to lowercase
+        email = request.form.get('email','').strip().lower()
         password = request.form.get('password','')
         
         if not email or not password:
@@ -247,7 +247,7 @@ def create_admin():
         return redirect(url_for('onboarding.dashboard'))
 
     if request.method == 'POST':
-        email = request.form.get('email','').strip().lower()  # Use email instead of username
+        email = request.form.get('email','').strip().lower()
         password = request.form.get('password','').strip()
         name = request.form.get('name','').strip()
 
@@ -283,6 +283,38 @@ def create_admin():
 
     return render_template('create_admin.html')
 
+@onboarding_bp.route('/admin/inactive_employees')
+@login_required
+def inactive_employees():
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+    
+    inactive_employees = Employee.query.filter_by(is_active=False).all()
+    return render_template('inactive_employees.html', employees=inactive_employees)
+
+# ==================== ADMIN ROUTES ====================
+
+@onboarding_bp.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+    
+    # Only show active employees
+    employees = Employee.query.filter_by(is_active=True).all()
+    pending_docs = Document.query.filter_by(is_approved=False).order_by(Document.uploaded_at.desc()).limit(5).all()
+    pending_count = Document.query.filter_by(is_approved=False).count()
+    approved_count = Document.query.filter_by(is_approved=True).count()
+    
+    return render_template('admin_dashboard.html', 
+                         employees=employees,
+                         pending_docs=pending_docs,
+                         pending_count=pending_count,
+                         approved_count=approved_count)
+
+# FIXED: Only one create_employee route
 @onboarding_bp.route('/admin/create_employee', methods=['GET', 'POST'])
 @login_required
 def create_employee():
@@ -307,74 +339,6 @@ def create_employee():
         # Create user with email as username
         hashed_pw = generate_password_hash(password)
         new_user = User(username=email, password=hashed_pw, is_admin=False)
-        db.session.add(new_user)
-        db.session.commit()
-
-        new_employee = Employee(user_id=new_user.id, email=email, is_active=True)
-        db.session.add(new_employee)
-        db.session.commit()
-
-        flash(f'Employee account created for {email}!', 'success')
-        return redirect(url_for('onboarding.admin_dashboard'))
-
-    return render_template('create_employee.html')
-
-
-@onboarding_bp.route('/admin/inactive_employees')
-@login_required
-def inactive_employees():
-    if not current_user.is_admin:
-        flash('Unauthorized access.', 'error')
-        return redirect(url_for('onboarding.dashboard'))
-    
-    inactive_employees = Employee.query.filter_by(is_active=False).all()
-    return render_template('inactive_employees.html', employees=inactive_employees)
-
-
-# ==================== ADMIN ROUTES ====================
-
-@onboarding_bp.route('/admin/dashboard')
-@login_required
-def admin_dashboard():
-    if not current_user.is_admin:
-        flash('Unauthorized access.', 'error')
-        return redirect(url_for('onboarding.dashboard'))
-    
-    # Only show active employees
-    employees = Employee.query.filter_by(is_active=True).all()
-    pending_docs = Document.query.filter_by(is_approved=False).order_by(Document.uploaded_at.desc()).limit(5).all()
-    pending_count = Document.query.filter_by(is_approved=False).count()
-    approved_count = Document.query.filter_by(is_approved=True).count()
-    
-    return render_template('admin_dashboard.html', 
-                         employees=employees,
-                         pending_docs=pending_docs,
-                         pending_count=pending_count,
-                         approved_count=approved_count)
-
-@onboarding_bp.route('/admin/create_employee', methods=['GET', 'POST'])
-@login_required
-def create_employee():
-    if not current_user.is_admin:
-        flash('Unauthorized access.', 'error')
-        return redirect(url_for('onboarding.dashboard'))
-
-    if request.method == 'POST':
-        # Generate username from email (optional, for internal use)
-        email = request.form.get('email','').strip()
-        password = request.form.get('password','').strip()
-        
-        # Check if email already exists (including inactive employees)
-        existing_employee = Employee.query.filter_by(email=email).first()
-        if existing_employee:
-            flash('Email already exists.', 'error')
-            return redirect(url_for('onboarding.create_employee'))
-
-        # Generate username from email
-        username = email.split('@')[0]  # Use email prefix as username
-        
-        hashed_pw = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_pw, is_admin=False)
         db.session.add(new_user)
         db.session.commit()
 
@@ -425,9 +389,27 @@ def reject_document(doc_id):
         return redirect(url_for('onboarding.dashboard'))
     
     document = Document.query.get_or_404(doc_id)
+    
+    # Delete from S3
+    try:
+        s3_client = get_s3_client()
+        s3_client.delete_object(
+            Bucket=os.getenv('AWS_S3_BUCKET'),
+            Key=document.s3_key
+        )
+        print(f"✅ Deleted from S3: {document.s3_key}")
+    except ClientError as e:
+        print(f"❌ S3 delete error: {e}")
+        flash(f'Error deleting file from S3: {str(e)}', 'error')
+    
+    # Delete from database
+    db.session.delete(document)
+    db.session.commit()
+    
+    flash('Document rejected and deleted.', 'success')
+    return redirect(url_for('onboarding.admin_documents'))
 
 # Delete approved documents
-
 @onboarding_bp.route('/admin/delete_approved_document/<int:doc_id>')
 @login_required
 def delete_approved_document(doc_id):
@@ -452,15 +434,13 @@ def delete_approved_document(doc_id):
     except ClientError as e:
         print(f"❌ S3 delete error: {e}")
         flash(f'Error deleting file from S3: {str(e)}', 'error')
-
     
     # Delete from database
     db.session.delete(document)
     db.session.commit()
     
-    flash('Document rejected and deleted.', 'success')
+    flash('Document deleted successfully.', 'success')
     return redirect(url_for('onboarding.admin_documents'))
-
 
 # ==================== ADMIN PROFILE MANAGEMENT ====================
 
@@ -632,9 +612,6 @@ def profile_setup():
                     'date_of_relieving': request.form.get('internshipDor')
                 }
                 internship_data['internships'].append(internship)
-                
-                # Additional internships (you'll need to handle dynamic fields)
-                # This is a simplified version - you'll need to implement dynamic field handling
             
             # Experience Details
             has_experience = request.form.get('experience') == 'yes'
