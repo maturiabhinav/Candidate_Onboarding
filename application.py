@@ -7,13 +7,19 @@ from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 from urllib.parse import urlparse
 import sqlalchemy as sa
-from datetime import datetime, timezone, timedelta  # Make sure timedelta is imported
+from datetime import datetime, timezone, timedelta
+import logging
 
 # Initialize Flask app
 app = Flask(__name__)
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # --- Configuration ---
 app.secret_key = os.getenv("SECRET_KEY", "fallback-secret-key")
+app.config['DEBUG'] = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Email configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
@@ -23,12 +29,33 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
-# Detect DATABASE_URL (PostgreSQL on Railway)
-DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
+mail_default_sender = os.getenv('MAIL_DEFAULT_SENDER')
+if mail_default_sender:
+    app.config['MAIL_DEFAULT_SENDER'] = mail_default_sender
+else:
+    # Use MAIL_USERNAME as default sender if MAIL_DEFAULT_SENDER not provided
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or "sqlite:///local.db"
+# RDS Database Configuration
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    # Handle both postgres:// and postgresql:// formats
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
+    
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "connect_args": {
+            "sslmode": "require"
+        }
+    }
+    logger.info("✅ RDS Database configured successfully")
+else:
+    # Fallback for local development only
+    logger.warning("⚠️ DATABASE_URL not found. Using SQLite for local development.")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///local.db"
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # --- Custom Jinja2 Filters ---
@@ -67,7 +94,7 @@ with app.app_context():
     try:
         # Try to query the user table - if it fails, create tables
         User.query.first()
-        print("ℹ️ Database tables already exist")
+        print("✅ Database tables already exist")
         
         # Check if is_active column exists in employee table
         inspector = sa.inspect(db.engine)
@@ -76,7 +103,6 @@ with app.app_context():
         if 'is_active' not in columns:
             print("🔄 Adding is_active column to employee table...")
             try:
-                # Correct way to execute raw SQL with SQLAlchemy 2.0+
                 with db.engine.connect() as conn:
                     conn.execute(sa.text('ALTER TABLE employee ADD COLUMN is_active BOOLEAN DEFAULT TRUE'))
                     conn.commit()
@@ -102,11 +128,14 @@ with app.app_context():
         db.create_all()
         print("✅ Database tables created")
     
-    # Create admin user only if it doesn't exist
-    admin_user = User.query.filter_by(username="admin").first()
-    if not admin_user:
+    # Create default admin user using email
+    admin_email = "admin@company.com"
+    admin_employee = Employee.query.filter_by(email=admin_email).first()
+    
+    if not admin_employee:
+        # Create admin user
         default_admin = User(
-            username="admin",
+            username=admin_email,  # Use email as username
             password=generate_password_hash("Admin@123"),
             is_admin=True
         )
@@ -116,14 +145,14 @@ with app.app_context():
         # Create employee record for admin
         admin_employee = Employee(
             user_id=default_admin.id, 
-            email="admin@company.com",
+            email=admin_email,
             name="Administrator",
             is_submitted=True,
             is_active=True
         )
         db.session.add(admin_employee)
         db.session.commit()
-        print("✅ Default admin account created: admin / Admin@123")
+        print("✅ Default admin account created: admin@company.com / Admin@123")
     else:
         print("ℹ️ Admin account already exists")
 
@@ -135,13 +164,7 @@ def load_user(user_id):
 # --- Root Route ---
 @app.route("/")
 def home():
-    return redirect(url_for('login'))
-
-# Your login route
-@app.route("/login")
-def login():
-    return "<h3>Login Page</h3>"
+    return redirect(url_for('onboarding.login'))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-

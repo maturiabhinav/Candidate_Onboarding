@@ -165,13 +165,17 @@ def login():
         return redirect(url_for('onboarding.dashboard'))
 
     if request.method == 'POST':
-        email = request.form.get('email','').strip()  # Changed from username to email
+        email = request.form.get('email','').strip().lower()  # Normalize email to lowercase
         password = request.form.get('password','')
         
-        # Find user by employee email
-        employee = Employee.query.filter_by(email=email).first()
+        if not email or not password:
+            flash('Please enter both email and password', 'error')
+            return redirect(url_for('onboarding.login'))
+        
+        # Find employee by email (case-insensitive)
+        employee = Employee.query.filter(Employee.email.ilike(email)).first()
         if not employee:
-            flash('Invalid credentials', 'error')
+            flash('Invalid email or password', 'error')
             return redirect(url_for('onboarding.login'))
         
         user = User.query.get(employee.user_id)
@@ -187,7 +191,9 @@ def login():
                 return redirect(url_for('onboarding.admin_dashboard'))
             else:
                 return redirect(url_for('onboarding.dashboard'))
-        flash('Invalid credentials', 'error')
+        else:
+            flash('Invalid email or password', 'error')
+    
     return render_template('login.html')
 
 @onboarding_bp.route('/logout')
@@ -241,28 +247,77 @@ def create_admin():
         return redirect(url_for('onboarding.dashboard'))
 
     if request.method == 'POST':
-        username = request.form.get('username','').strip()
+        email = request.form.get('email','').strip().lower()  # Use email instead of username
         password = request.form.get('password','').strip()
-        email = request.form.get('email','').strip()
+        name = request.form.get('name','').strip()
 
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists.', 'error')
+        if not email or not password:
+            flash('Email and password are required.', 'error')
             return redirect(url_for('onboarding.create_admin'))
 
+        # Check if email already exists
+        existing_employee = Employee.query.filter(Employee.email.ilike(email)).first()
+        if existing_employee:
+            flash('Email already exists.', 'error')
+            return redirect(url_for('onboarding.create_admin'))
+
+        # Create user with email as username
         hashed_pw = generate_password_hash(password)
-        new_admin = User(username=username, password=hashed_pw, is_admin=True)
+        new_admin = User(username=email, password=hashed_pw, is_admin=True)
         db.session.add(new_admin)
         db.session.commit()
 
-        # Create employee record for admin (optional, for consistency)
-        new_employee = Employee(user_id=new_admin.id, email=email, name=username, is_submitted=True)
+        # Create employee record
+        new_employee = Employee(
+            user_id=new_admin.id, 
+            email=email, 
+            name=name, 
+            is_submitted=True,
+            is_active=True
+        )
         db.session.add(new_employee)
         db.session.commit()
 
-        flash(f'Admin account created for {username}!', 'success')
+        flash(f'Admin account created for {email}!', 'success')
         return redirect(url_for('onboarding.admin_dashboard'))
 
     return render_template('create_admin.html')
+
+@onboarding_bp.route('/admin/create_employee', methods=['GET', 'POST'])
+@login_required
+def create_employee():
+    if not current_user.is_admin:
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('onboarding.dashboard'))
+
+    if request.method == 'POST':
+        email = request.form.get('email','').strip().lower()
+        password = request.form.get('password','').strip()
+        
+        if not email or not password:
+            flash('Email and password are required.', 'error')
+            return redirect(url_for('onboarding.create_employee'))
+
+        # Check if email already exists (including inactive employees)
+        existing_employee = Employee.query.filter(Employee.email.ilike(email)).first()
+        if existing_employee:
+            flash('Email already exists.', 'error')
+            return redirect(url_for('onboarding.create_employee'))
+
+        # Create user with email as username
+        hashed_pw = generate_password_hash(password)
+        new_user = User(username=email, password=hashed_pw, is_admin=False)
+        db.session.add(new_user)
+        db.session.commit()
+
+        new_employee = Employee(user_id=new_user.id, email=email, is_active=True)
+        db.session.add(new_employee)
+        db.session.commit()
+
+        flash(f'Employee account created for {email}!', 'success')
+        return redirect(url_for('onboarding.admin_dashboard'))
+
+    return render_template('create_employee.html')
 
 
 @onboarding_bp.route('/admin/inactive_employees')

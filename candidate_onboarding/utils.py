@@ -2,7 +2,7 @@ import jwt
 import boto3
 import uuid
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from flask import current_app, url_for
 from flask_mail import Message
 from candidate_onboarding import mail
@@ -16,7 +16,7 @@ def send_email(subject, recipient, template):
             subject,
             recipients=[recipient],
             html=template,
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER')
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER') or current_app.config.get('MAIL_USERNAME')
         )
         mail.send(msg)
         return True
@@ -28,7 +28,7 @@ def generate_token(user_id, token_type='reset'):
     payload = {
         'user_id': user_id,
         'token_type': token_type,
-        'exp': datetime.timezone.utc() + timedelta(hours=24)
+        'exp': datetime.now(timezone.utc) + timedelta(hours=24)
     }
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
