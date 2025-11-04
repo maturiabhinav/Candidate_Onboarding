@@ -32,6 +32,7 @@ def handle_file_uploads(request, employee):
     """Handle multiple file uploads for different document categories"""
     try:
         uploaded_files = []
+        print(f"📁 DEBUG: Starting file uploads for employee {employee.id}")
         
         # Education documents
         education_files = {
@@ -43,6 +44,7 @@ def handle_file_uploads(request, employee):
         
         for doc_type, file in education_files.items():
             if file and file.filename:
+                print(f"📄 DEBUG: Uploading {doc_type} document: {file.filename}")
                 upload_result = upload_to_s3(file, f"education/{doc_type}", employee.id)
                 if upload_result:
                     document = Document(
@@ -58,6 +60,7 @@ def handle_file_uploads(request, employee):
                     )
                     db.session.add(document)
                     uploaded_files.append(file.filename)
+                    print(f"✅ DEBUG: {doc_type} document uploaded successfully")
         
         # Identity documents
         identity_files = {
@@ -69,6 +72,7 @@ def handle_file_uploads(request, employee):
         
         for doc_type, file in identity_files.items():
             if file and file.filename:
+                print(f"📄 DEBUG: Uploading {doc_type} document: {file.filename}")
                 upload_result = upload_to_s3(file, f"identity/{doc_type}", employee.id)
                 if upload_result:
                     document = Document(
@@ -84,10 +88,12 @@ def handle_file_uploads(request, employee):
                     )
                     db.session.add(document)
                     uploaded_files.append(file.filename)
+                    print(f"✅ DEBUG: {doc_type} document uploaded successfully")
         
         # Bank documents
         bank_file = request.files.get('bankDoc')
         if bank_file and bank_file.filename:
+            print(f"📄 DEBUG: Uploading bank document: {bank_file.filename}")
             upload_result = upload_to_s3(bank_file, "bank", employee.id)
             if upload_result:
                 document = Document(
@@ -103,10 +109,12 @@ def handle_file_uploads(request, employee):
                 )
                 db.session.add(document)
                 uploaded_files.append(bank_file.filename)
+                print("✅ DEBUG: Bank document uploaded successfully")
         
         # Internship documents
         internship_file = request.files.get('internshipOffer')
         if internship_file and internship_file.filename:
+            print(f"📄 DEBUG: Uploading internship document: {internship_file.filename}")
             upload_result = upload_to_s3(internship_file, "internship", employee.id)
             if upload_result:
                 document = Document(
@@ -122,6 +130,7 @@ def handle_file_uploads(request, employee):
                 )
                 db.session.add(document)
                 uploaded_files.append(internship_file.filename)
+                print("✅ DEBUG: Internship document uploaded successfully")
         
         # Experience documents
         experience_files = {
@@ -132,6 +141,7 @@ def handle_file_uploads(request, employee):
         
         for doc_type, file in experience_files.items():
             if file and file.filename:
+                print(f"📄 DEBUG: Uploading {doc_type} document: {file.filename}")
                 upload_result = upload_to_s3(file, f"experience/{doc_type}", employee.id)
                 if upload_result:
                     document = Document(
@@ -147,14 +157,17 @@ def handle_file_uploads(request, employee):
                     )
                     db.session.add(document)
                     uploaded_files.append(file.filename)
+                    print(f"✅ DEBUG: {doc_type} document uploaded successfully")
         
-        print(f"✅ Successfully uploaded {len(uploaded_files)} files: {uploaded_files}")
+        print(f"✅ DEBUG: Successfully uploaded {len(uploaded_files)} files: {uploaded_files}")
         return True
         
     except Exception as e:
-        print(f"❌ Error handling file uploads: {e}")
+        print(f"❌ DEBUG: Error handling file uploads: {e}")
+        import traceback
+        print(f"❌ DEBUG: File upload traceback: {traceback.format_exc()}")
         return False
-
+    
 # ==================== AUTHENTICATION ROUTES ====================
 
 @onboarding_bp.route('/login', methods=['GET', 'POST'])
@@ -534,7 +547,21 @@ def profile_setup():
     
     employee = Employee.query.filter_by(user_id=current_user.id).first()
     
+    if not employee:
+        flash('Employee record not found.', 'error')
+        return redirect(url_for('onboarding.logout'))
+    
+    print(f"🔍 DEBUG: Profile setup - Method: {request.method}, Employee: {employee.email}")
+    
     if request.method == 'POST':
+        print("🔄 DEBUG: Form submitted via POST")
+        print(f"📋 DEBUG: Form data keys: {list(request.form.keys())}")
+        print(f"📁 DEBUG: Files received: {list(request.files.keys())}")
+        
+        # Print all form data for debugging
+        for key, value in request.form.items():
+            print(f"📝 DEBUG: Form field - {key}: {value}")
+        
         try:
             # Personal Details
             name = request.form.get('fullName','').strip()
@@ -546,6 +573,8 @@ def profile_setup():
             email = request.form.get('email','').strip()
             emergency_contact_name = request.form.get('emergencyName','').strip()
             emergency_contact_number = request.form.get('emergencyContact','').strip()
+            
+            print(f"👤 DEBUG: Personal details - Name: {name}, Email: {email}, Mobile: {mobile}")
             
             # Validate required fields
             required_fields = {
@@ -562,6 +591,7 @@ def profile_setup():
             
             missing_fields = [field for field, value in required_fields.items() if not value]
             if missing_fields:
+                print(f"❌ DEBUG: Missing required fields: {missing_fields}")
                 flash('Please fill all required personal details fields.', 'error')
                 return redirect(url_for('onboarding.profile_setup'))
             
@@ -593,6 +623,8 @@ def profile_setup():
                 }
             }
             
+            print(f"🎓 DEBUG: Education data collected")
+            
             # Internship Details
             has_internship = request.form.get('internship') == 'yes'
             internship_data = {
@@ -601,7 +633,6 @@ def profile_setup():
             }
             
             if has_internship:
-                # Main internship
                 internship = {
                     'company_name': request.form.get('internshipCompanyName'),
                     'designation': request.form.get('internshipDesignation'),
@@ -612,6 +643,7 @@ def profile_setup():
                     'date_of_relieving': request.form.get('internshipDor')
                 }
                 internship_data['internships'].append(internship)
+                print(f"💼 DEBUG: Internship data: {internship}")
             
             # Experience Details
             has_experience = request.form.get('experience') == 'yes'
@@ -631,6 +663,7 @@ def profile_setup():
                     'date_of_relieving': request.form.get('experienceDor')
                 }
                 experience_data['experiences'].append(experience)
+                print(f"💼 DEBUG: Experience data: {experience}")
             
             # Other Details
             other_data = {
@@ -650,6 +683,8 @@ def profile_setup():
                 'driving_license': request.form.get('Licencenumber')
             }
             
+            print(f"📄 DEBUG: Other details collected")
+            
             # Update employee record
             employee.name = name
             employee.father_name = father_name
@@ -667,19 +702,30 @@ def profile_setup():
             employee.is_submitted = True
             employee.submitted_at = datetime.utcnow()
             
-            # Handle file uploads
-            files_handled = handle_file_uploads(request, employee)
+            print(f"💾 DEBUG: Employee record updated - Name: {employee.name}, Submitted: {employee.is_submitted}")
             
+            # Handle file uploads
+            print("📤 DEBUG: Starting file uploads...")
+            files_handled = handle_file_uploads(request, employee)
+            print(f"✅ DEBUG: Files handled: {files_handled}")
+            
+            # Commit to database
             db.session.commit()
+            print("💾 DEBUG: Database commit successful!")
             
             flash('Your profile has been submitted successfully!', 'success')
             return redirect(url_for('onboarding.dashboard'))
             
         except Exception as e:
             db.session.rollback()
+            print(f"❌ DEBUG: Error in profile setup: {str(e)}")
+            print(f"❌ DEBUG: Error type: {type(e)}")
+            import traceback
+            print(f"❌ DEBUG: Traceback: {traceback.format_exc()}")
             flash(f'Error submitting profile: {str(e)}', 'error')
             return redirect(url_for('onboarding.profile_setup'))
     
+    print("📄 DEBUG: Rendering profile_setup template")
     return render_template('profile_setup.html', employee=employee)
 
 @onboarding_bp.route('/reset_profile')
