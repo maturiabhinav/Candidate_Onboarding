@@ -1011,19 +1011,17 @@ function buildPreview() {
 }
 
 function showThankYou() {
+  // First submit the form
+  document.getElementById('masterForm').submit();
+  
+  // Then show thank you message (this will only show if form submission fails)
   const ids = ['loginForm','forgotForm','personalDetails','educationDetails','experienceDetailsSection','internshipDetailsSection','otherDetails','previewSection'];
-  ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  ids.forEach(id => { 
+    const el = document.getElementById(id); 
+    if (el) el.style.display = 'none'; 
+  });
   document.getElementById('thankYouSection').style.display = 'block';
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  showLoginForm();
-});
-
-document.querySelectorAll("input, select, textarea").forEach(el => {
-  el.addEventListener("input", () => el.classList.remove("invalid"));
-  el.addEventListener("change", () => el.classList.remove("invalid"));
-});
 </script>
 </body>
 </html>
